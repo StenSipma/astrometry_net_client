@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Vim You Complete Me config file
+.ycm_extra_conf.py
