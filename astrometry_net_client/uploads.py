@@ -1,3 +1,8 @@
+import abc
+from astrometry_net_client.config import upload_url
+from astrometry_net_client.statusables import Submission
+from astrometry_net_client.request import AuthorizedRequest, PostRequest
+
 class Submitter(abc.ABC):
     """
     Abstract class intended to use as a mixin class with a Request object (and

@@ -1,6 +1,8 @@
 from sys import argv
 
-from astrometry_net_client.client import Session, FileUpload, Submission
+from astrometry_net_client.client import Session
+from astrometry_net_client.uploads import FileUpload
+from astrometry_net_client.statusables import Submission
 
 
 key_location = '/home/sten/Documents/Projects/PracticalAstronomyCrew/key'
@@ -21,8 +23,8 @@ def login():
 
 def main():
     if len(argv) > 1 and argv[1] == 'online':
-        s = login()
 
+        s = login()
         upl = FileUpload(filename, session=s)
 
         print(upl)
@@ -48,10 +50,6 @@ def main():
         print('Job Response:', resp)
         print('Job Status:', job.result)
 
-    
 
 if __name__ == '__main__':
     main()
-
-
-
