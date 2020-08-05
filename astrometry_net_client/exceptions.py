@@ -12,6 +12,8 @@ class InvalidRequest(RequestException):
 class FailedRequest(RequestException):
     pass
 
+class LoginFailedException(RequestException):
+    pass
 
 # Session exceptions
 class SessionError(RequestException):

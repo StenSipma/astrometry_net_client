@@ -12,6 +12,9 @@ install:
 package:
 	$(PY) setup.py sdist bdist_wheel
 
+dependencies:
+	$(PIP) install -r requirements.txt
+
 test:
 	$(PY) tests/test.py
 
