@@ -15,6 +15,12 @@ class FailedRequest(RequestException):
 class LoginFailedException(RequestException):
     pass
 
+class StillProcessingException(RequestException):
+    pass
+
+class UnkownContentError(RequestException):
+    pass
+
 # Session exceptions
 class SessionError(RequestException):
     pass

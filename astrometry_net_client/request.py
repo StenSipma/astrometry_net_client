@@ -1,8 +1,9 @@
 import json
 
 import requests
+from astropy.io import fits
 
-from astrometry_net_client.exceptions import NoSessionError, InvalidSessionError, InvalidRequest
+from astrometry_net_client.exceptions import NoSessionError, InvalidSessionError, InvalidRequest, UnkownContentError
 
 class Request(object):
     """
@@ -26,11 +27,11 @@ class Request(object):
     where data and settings are both combined and wrapped into the 
     'request-json' form, but are split to allow for some general settings.
 
-    It is valid to omit specifying a url, if the subclass already has its own
-    url attribute.
-
     An alternative for not using the "method='post'" is to use the PostRequest 
     class
+
+    It is valid to omit specifying a url, if the subclass already has its own
+    url attribute.
 
     The internal _make_request() method can be used to extend the functionality
     of requests (e.g. AuthorizedRequest: by making sure the user is logged in). 
@@ -38,8 +39,12 @@ class Request(object):
     Additional arguments specied in the constructor (which are not directly 
     used in this class or any subclass) will be stored and passed to the 
     request call.
+
+    The original response (as returned from the requests module call) is stored
+    in the `original_response` attribute.
     """
     _method_dict = {'post': requests.post, 'get': requests.get}
+    _raw_content_types = {'application/fits', 'image/jpeg', 'image/png'}
 
     def __init__(self, url=None, method='get', data=None, settings=None, **kwargs):
         self.data = {} if data is None else data.copy()
@@ -54,21 +59,34 @@ class Request(object):
         payload = {'request-json': json.dumps({**self.data, **self.settings})}
         response = self.method(self.url, data=payload, **self.arguments)
         print('Response:', response.text)
-        response = response.json()
-        self.response = response
+        self.original_response = response
 
-        # TODO add complete response checking
-        if response.get('status', '') == 'error':
-            err_msg = response['errormessage']
-            if err_msg == 'no "session" in JSON.':
-                # No session argument provided
-                raise NoSessionError(err_msg)
-            if err_msg.startswith('no session with key'):
-                # Invalid / Expired session key provided
-                raise InvalidSessionError(err_msg)
+        content_type = response.headers['Content-Type']
 
-            # fallback exception for a general error
-            raise InvalidRequest(err_msg)
+        # case where the response is JSON as text
+        if content_type.startswith('text/plain'):
+            response = response.json()
+            self.response = response
+
+            # TODO add complete response checking
+            if response.get('status', '') == 'error':
+                err_msg = response['errormessage']
+                if err_msg == 'no "session" in JSON.':
+                    # No session argument provided
+                    raise NoSessionError(err_msg)
+                if err_msg.startswith('no session with key'):
+                    # Invalid / Expired session key provided
+                    raise InvalidSessionError(err_msg)
+
+                # fallback exception for a general error
+                raise InvalidRequest(err_msg)
+
+        # case where a file is returned, we want to return the raw bytes
+        elif content_type in self._raw_content_types:
+            self.response = response.content
+        else:
+            msg = 'Request produced a response with unknown content type {}'
+            raise UnkownContentError(msg.format(content_type))
 
         return self.response
 
@@ -130,3 +148,25 @@ class AuthorizedRequest(Request):
             self.data['session'] = self.session.key
 
         return super()._make_request()
+
+
+def file_request(url):
+    """
+    Utility function which makes a request to `url` and gets a file in
+    response.
+    Returns the binary contents of this file.
+    """
+    r = Request(url)
+    binary_file = r.make()
+    return binary_file
+
+
+def fits_file_request(url):
+    """
+    Makes a request to url  and read the binary_fits response into
+    an astropy fits file (astropy.io.fits.HDUList)  
+    """
+    binary_fits = file_request(url)
+    hdul = fits.HDUList(file=binary_fits)
+    return hdul
+

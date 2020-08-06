@@ -38,6 +38,7 @@ def main():
         submission = Submission(3723552)
     
     resp = submission.status()
+
     print('Response:', resp)
     print('Start: ', submission.processing_started)
     print('User Img', submission.user_images)
@@ -48,7 +49,16 @@ def main():
         print('Job ID:', job.id)
         resp = job.status()
         print('Job Response:', resp)
-        print('Job Status:', job.result)
+        print('Job Status:', job.status_success())
+        job.info()
+        wcs = job.wcs_file()
+        print('HISTORY START:')
+        print(wcs['history'])
+        print()
+
+        print('COMMENT START:')
+        print(wcs['comment'])
+        print()
 
 
 if __name__ == '__main__':
