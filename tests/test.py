@@ -2,7 +2,7 @@ from sys import argv
 
 from astropy.io.fits import Header
 
-from astrometry_net_client.client import Session
+from astrometry_net_client.session import Session
 from astrometry_net_client.statusables import Submission
 from astrometry_net_client.uploads import FileUpload
 
@@ -53,6 +53,7 @@ def main():
         print("Before status:", job)
         resp = job.status()
         print("After Status:", job)
+
         resp = job.info()
         print("Info:", resp)
         wcs = job.wcs_file()

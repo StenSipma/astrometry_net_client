@@ -57,6 +57,10 @@ class FileUpload(BaseUpload):
             response = super()._make_request()
         return response
 
+    def __repr__(self):
+        msg = "FileUpload(filename={}, session={})"
+        return msg.format(self.filename, self.session)
+
 
 class URLUpload(BaseUpload):
     """

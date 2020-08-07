@@ -45,7 +45,7 @@ def ensure_status(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         self.status()
-        if not self._is_final_status():
+        if not self.done():
             raise StillProcessingException()
         result = func(self, *args, **kwargs)
         return result
@@ -66,11 +66,8 @@ class Statusable(abc.ABC):
     def _status_success(self):
         pass
 
-    def status_success(self):
-        return self._is_final_status() and self._status_success()
-
     def status(self, max_retries=3):
-        if not self._is_final_status():
+        if not self.done():
             # TODO evaluate if retrying here is needed, probably better
             #      in some other place
             attempt = 0
@@ -88,6 +85,9 @@ class Statusable(abc.ABC):
                 raise ExhaustedAttemptsException(msg.format(max_retries))
 
         return self.stat_response
+
+    def success(self):
+        return self._is_final_status() and self._status_success()
 
     def done(self):
         return self._is_final_status()
@@ -142,8 +142,8 @@ class Submission(Statusable):
         return hasattr(self, "jobs") and len(self.jobs) > 0
 
     def _status_success(self):
-        if self._is_final_status():
-            return all(job._status_success() for job in self.jobs)
+        if self.done():
+            return all(job.success() for job in self.jobs)
         return False
 
     def __repr__(self):
@@ -151,9 +151,7 @@ class Submission(Statusable):
 
     def __str__(self):
         msg = "Submission(id={}, final={}, success={})"
-        return msg.format(
-            self.id, self._is_final_status(), self.status_success()
-        )
+        return msg.format(self.id, self.done(), self.success())
 
 
 class Job(Statusable):
@@ -279,6 +277,4 @@ class Job(Statusable):
 
     def __str__(self):
         msg = "Job(id={}, final={}, success={})"
-        return msg.format(
-            self.id, self._is_final_status(), self.status_success()
-        )
+        return msg.format(self.id, self.done(), self.success())
