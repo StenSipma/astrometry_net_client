@@ -5,15 +5,15 @@ from astrometry_net_client.uploads import FileUpload
 from astrometry_net_client.statusables import Submission
 
 
-key_location = '/home/sten/Documents/Projects/PracticalAstronomyCrew/key'
-filename = '/home/sten/Documents/Projects/PracticalAstronomyCrew/test-data/target.200417.00000088.3x3.FR.fits'
+key_location = "/home/sten/Documents/Projects/PracticalAstronomyCrew/key"
+filename = "/home/sten/Documents/Projects/PracticalAstronomyCrew/test-data/target.200417.00000088.3x3.FR.fits"
 
 
 def login():
-    print('Creating session')
+    print("Creating session")
     s = Session(None, key_location=key_location)
 
-    print('Loggin in')
+    print("Loggin in")
     s.login()
 
     print(s)
@@ -22,44 +22,44 @@ def login():
 
 
 def main():
-    if len(argv) > 1 and argv[1] == 'online':
+    if len(argv) > 1 and argv[1] == "online":
 
         s = login()
         upl = FileUpload(filename, session=s)
 
         print(upl)
-        print('Uploading')
+        print("Uploading")
         submission = upl.submit()
 
-        print('Got submission:')
+        print("Got submission:")
         print(submission)
-        print('id', submission.id)
+        print("id", submission.id)
     else:
         submission = Submission(3723552)
-    
+
     resp = submission.status()
 
-    print('Response:', resp)
-    print('Start: ', submission.processing_started)
-    print('User Img', submission.user_images)
-    print('Calibrations', submission.job_calibrations)
-    print('Jobs', submission.jobs)
+    print("Response:", resp)
+    print("Start: ", submission.processing_started)
+    print("User Img", submission.user_images)
+    print("Calibrations", submission.job_calibrations)
+    print("Jobs", submission.jobs)
 
     for job in submission.jobs:
-        print('Job ID:', job.id)
+        print("Job ID:", job.id)
         resp = job.status()
-        print('Job Response:', resp)
-        print('Job Status:', job.status_success())
+        print("Job Response:", resp)
+        print("Job Status:", job.status_success())
         job.info()
         wcs = job.wcs_file()
-        print('HISTORY START:')
-        print(wcs['history'])
+        print("HISTORY START:")
+        print(wcs["history"])
         print()
 
-        print('COMMENT START:')
-        print(wcs['comment'])
+        print("COMMENT START:")
+        print(wcs["comment"])
         print()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

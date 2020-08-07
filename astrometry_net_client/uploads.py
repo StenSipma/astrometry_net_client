@@ -3,6 +3,7 @@ from astrometry_net_client.config import upload_url
 from astrometry_net_client.statusables import Submission
 from astrometry_net_client.request import AuthorizedRequest, PostRequest
 
+
 class Submitter(abc.ABC):
     """
     Abstract class intended to use as a mixin class with a Request object (and
@@ -14,13 +15,14 @@ class Submitter(abc.ABC):
      >>> upl = FileUpload(filename, session)
      >>> submission = upl.submit()
     """
+
     @abc.abstractmethod
     def _make_request(self):
         pass
 
     def submit(self):
         response = self._make_request()
-        return Submission(response['subid'])
+        return Submission(response["subid"])
 
 
 class BaseUpload(AuthorizedRequest, PostRequest, Submitter):
@@ -31,6 +33,7 @@ class BaseUpload(AuthorizedRequest, PostRequest, Submitter):
     
     Meant as an abstact class, not to be called directly.
     """
+
     pass
 
 
@@ -39,6 +42,7 @@ class FileUpload(BaseUpload):
     Class for uploading a file to Astrometry.net
     http://astrometry.net/doc/net/api.html#submitting-a-file
     """
+
     url = upload_url
 
     def __init__(self, filename, *args, **kwargs):
@@ -47,8 +51,8 @@ class FileUpload(BaseUpload):
         self.filename = filename
 
     def _make_request(self):
-        with open(self.filename, 'rb') as f:
-            self.arguments['files'] = {'file': f}
+        with open(self.filename, "rb") as f:
+            self.arguments["files"] = {"file": f}
             response = super()._make_request()
         return response
 
@@ -58,6 +62,7 @@ class URLUpload(BaseUpload):
     Class for making a url upload to Astrometry.net
     http://astrometry.net/doc/net/api.html#submitting-a-url
     """
+
     pass
 
 
@@ -65,7 +70,6 @@ class SourcesUpload(BaseUpload):
     """
     Class for uploading a list of sources. (inspired by astroquery implementation)
     """
-    #TODO: Decide if this is necessary
+
+    # TODO: Decide if this is necessary
     pass
-
-

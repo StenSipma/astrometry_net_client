@@ -3,18 +3,26 @@ from functools import wraps
 
 from astropy.io import fits
 
-from astrometry_net_client.exceptions import ExhaustedAttemptsException, StillProcessingException
+from astrometry_net_client.exceptions import (
+    ExhaustedAttemptsException,
+    StillProcessingException,
+)
 from astrometry_net_client.config import BASE_URL
-from astrometry_net_client.request import Request, fits_file_request, file_request
+from astrometry_net_client.request import (
+    Request,
+    fits_file_request,
+    file_request,
+)
+
 
 def cache_response(func):
     """
     Wrapper around a function to cache its result in an attribute of the object.
     Name of the attribute is: _<funcname>_result
     """
-    #TODO can the result be cached in a closure variable instead of an attribute?
+    # TODO can the result be cached in a closure variable instead of an attribute?
     func_name = func.__name__
-    result_attr = '_{}_result'.format(func_name)
+    result_attr = "_{}_result".format(func_name)
 
     @wraps(func)
     def wrapper(self, *args, force=False, **kwargs):
@@ -32,6 +40,7 @@ def ensure_status(func):
     Decorator for a method to enforce it only being called when the 
     statusable is finished.
     """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         self.status()
@@ -39,6 +48,7 @@ def ensure_status(func):
             raise StillProcessingException()
         result = func(self, *args, **kwargs)
         return result
+
     return wrapper
 
 
@@ -66,14 +76,14 @@ class Statusable(abc.ABC):
                 try:
                     self.stat_response = self._make_status_request()
                 except Exception as e:
-                    print('Failed with exception', e)
+                    print("Failed with exception", e)
                     attempt += 1
                 else:
                     break
             else:
-                msg = 'Connection could not be made after {} attempts. Due to exception {}'
+                msg = "Connection could not be made after {} attempts. Due to exception {}"
                 # TODO: verify if 'e' works here
-                raise ExhaustedAttemptsException(msg.format(max_retries, e)) 
+                raise ExhaustedAttemptsException(msg.format(max_retries, e))
 
         return self.stat_response
 
@@ -85,8 +95,9 @@ class Submission(Statusable):
     A submission contains a list with jobs
     If the job_calibrations list is nonempty, the image is solved.
     """
+
     # TODO: when are there multiple jobs?
-    url = BASE_URL + '/submissions/{submission.id}'
+    url = BASE_URL + "/submissions/{submission.id}"
 
     def __init__(self, submission_id):
         self.id = submission_id
@@ -100,7 +111,6 @@ class Submission(Statusable):
          ...    process_job()
         """
         return iter(self.jobs)
-        
 
     def _make_status_request(self):
         r = Request(self.url)
@@ -108,13 +118,15 @@ class Submission(Statusable):
         self.response = response
 
         # TODO verify which of these entries are valid in the response
-        self.processing_started = response['processing_started']
-        self.processing_finished = response['processing_finished']
-        self.user_images = response['user_images']
-        self.images = response['images']
-        self.job_calibrations = response['job_calibrations']
+        self.processing_started = response["processing_started"]
+        self.processing_finished = response["processing_finished"]
+        self.user_images = response["user_images"]
+        self.images = response["images"]
+        self.job_calibrations = response["job_calibrations"]
 
-        self.jobs = [Job(job_id) for job_id in response['jobs'] if job_id is not None]
+        self.jobs = [
+            Job(job_id) for job_id in response["jobs"] if job_id is not None
+        ]
         return response
 
     def _is_final_status(self):
@@ -122,12 +134,13 @@ class Submission(Statusable):
         We define 'final' here as processing has finished and the jobs have
         started, assuming there is always at least one job.
         """
-        return hasattr(self, 'jobs') and len(self.jobs) > 0
+        return hasattr(self, "jobs") and len(self.jobs) > 0
 
     def _status_success(self):
         if self._is_final_status():
             return all(job._status_success() for job in self.jobs)
         return False
+
 
 class Job(Statusable):
     """
@@ -135,19 +148,27 @@ class Job(Statusable):
     It can either still be running, or be finished.
     When finished, results can be queried using the appropriate methods.
     """
-    url = BASE_URL + '/jobs/{job.id}'
 
-    info_suffix = '/info'
+    url = BASE_URL + "/jobs/{job.id}"
+
+    info_suffix = "/info"
 
     # does not include the .../api/ path ... :(
-    wcs_file_url = 'http://nova.astrometry.net/wcs_file/{job.id}'
-    fits_file_url = 'http://nova.astrometry.net/new_fits_file/{job.id}'
-    rdls_file_url = 'http://nova.astrometry.net/rdls_file/{job.id}'
-    axy_file_url = 'http://nova.astrometry.net/axy_file/{job.id}'
-    corr_file_url = 'http://nova.astrometry.net/corr_file/{job.id}'
-    annotated_display_url = 'http://nova.astrometry.net/annotated_display/{job.id}'
-    red_green_image_display_url = 'http://nova.astrometry.net/red_green_image_display/{job.id}'
-    extraction_image_display_url = 'http://nova.astrometry.net/extraction_image_display/{job.id}'
+    wcs_file_url = "http://nova.astrometry.net/wcs_file/{job.id}"
+    fits_file_url = "http://nova.astrometry.net/new_fits_file/{job.id}"
+    rdls_file_url = "http://nova.astrometry.net/rdls_file/{job.id}"
+    axy_file_url = "http://nova.astrometry.net/axy_file/{job.id}"
+    corr_file_url = "http://nova.astrometry.net/corr_file/{job.id}"
+    annotated_display_url = (
+        "http://nova.astrometry.net/annotated_display/{job.id}"
+    )
+    red_green_image_display_url = (
+        "http://nova.astrometry.net/red_green_image_display/{job.id}"
+    )
+    extraction_image_display_url = (
+        "http://nova.astrometry.net/extraction_image_display/{job.id}"
+    )
+
     def __init__(self, job_id):
         self.id = job_id
         self.url = self.url.format(job=self)
@@ -155,18 +176,17 @@ class Job(Statusable):
     def _make_status_request(self):
         r = Request(self.url)
         response = r.make()
-        self.resp_status = response['status']
+        self.resp_status = response["status"]
         return response
 
     def _is_final_status(self):
         try:
-            return self.resp_status in {'success', 'failure'}
+            return self.resp_status in {"success", "failure"}
         except AttributeError:
             return False
 
     def _status_success(self):
-        return self.resp_status == 'success'
-
+        return self.resp_status == "success"
 
     @ensure_status
     @cache_response
@@ -175,16 +195,15 @@ class Job(Statusable):
         response = r.make()
 
         self.info_response = response
-        self.objects_in_field = response['objects_in_field']
-        self.machine_tags = response['machine_tags']
-        self.tags = response['tags']
-        self.original_filename = response['original_filename']
+        self.objects_in_field = response["objects_in_field"]
+        self.machine_tags = response["machine_tags"]
+        self.tags = response["tags"]
+        self.original_filename = response["original_filename"]
         # TODO make a calibration class ?
         # Only exists if status is success (?)
-        #self.calibration = response['calibration']
+        # self.calibration = response['calibration']
 
         return response
-
 
     @ensure_status
     @cache_response
@@ -240,4 +259,3 @@ class Job(Statusable):
         PNG image as a binary string
         """
         return file_request(self.extraction_image_display_url.format(job=self))
-        

@@ -1,6 +1,8 @@
 PY=python3
 PIP=pip
 
+PY_FILES=astrometry_net_client/*.py tests/*.py setup.py
+
 all: check-in-venv package install test
 
 check-in-venv:
@@ -18,7 +20,15 @@ dependencies:
 test:
 	$(PY) tests/test.py
 
+format:
+	black -l 80 $(PY_FILES)
+
+lint:
+
+
 clean:
 	-rm -r astrometry_net_client.egg-info 
 	-rm -r build 
 	-rm -r dist
+
+
