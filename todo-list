@@ -1,0 +1,15 @@
+#!/bin/bash
+
+match_str='#\s*TODO.*$'
+grep_opts='-o -T'
+
+echo "Source Code TODOs:"
+echo "=================="
+
+grep $match_str $grep_opts ./astrometry_net_client/*.py
+
+echo ""
+echo "Testing TODOs:"
+echo "=============="
+
+grep $match_str $grep_opts ./tests/*.py
