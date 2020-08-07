@@ -1,5 +1,6 @@
-Astrometry.net Client Documentation!
-====================================
+Astrometry.net Client Documentation
+===================================
+
 
 Hello and welcome. This documentation is still a work in progress...
 
@@ -7,6 +8,8 @@ Hello and welcome. This documentation is still a work in progress...
    :maxdepth: 2
    :caption: Contents:
 
+   help
+   modules/internal
 
 
 Indices and tables

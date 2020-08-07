@@ -7,22 +7,28 @@ BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
 
 
-default: check-in-venv format lint package install test
+default: check-in-venv format lint install test
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install:
+install: package
 	$(PIP) install dist/astrometry_net_client-*.tar.gz
 
 package:
 	$(PY) setup.py sdist bdist_wheel
 
+# Dependencies for the development environment, 
+# e.g. contains Sphinx, flake8, black, isort etc.
 dependencies:
 	$(PIP) install -r requirements.txt
 
-# Testing
+# Generate the documentation
+docs:
+	make --directory=docs html
+
+# Testing (will be improved)
 test:
 	$(PY) tests/test.py
 
@@ -38,11 +44,14 @@ check-format:
 lint:
 	flake8 $(PY_FILES)
 
-
 # Cleanup
-clean:
+clean: clean-package clean-docs
+
+clean-package:
 	-rm -r astrometry_net_client.egg-info 
 	-rm -r build 
 	-rm -r dist
 
+clean-docs:
+	make --directory=docs clean
 

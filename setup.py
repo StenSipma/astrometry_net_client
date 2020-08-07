@@ -13,4 +13,5 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/StenSipma/astrometry_net_client",
     packages=["astrometry_net_client"],
+    install_requires=["astropy", "requests"],
 )
