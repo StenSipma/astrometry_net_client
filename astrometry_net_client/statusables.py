@@ -3,24 +3,25 @@ from functools import wraps
 
 from astropy.io import fits
 
+from astrometry_net_client.config import BASE_URL
 from astrometry_net_client.exceptions import (
     ExhaustedAttemptsException,
     StillProcessingException,
 )
-from astrometry_net_client.config import BASE_URL
 from astrometry_net_client.request import (
     Request,
-    fits_file_request,
     file_request,
+    fits_file_request,
 )
 
 
 def cache_response(func):
     """
-    Wrapper around a function to cache its result in an attribute of the object.
-    Name of the attribute is: _<funcname>_result
+    Wrapper around a function to cache its result in an attribute of the
+    object. Name of the attribute is: _<funcname>_result
     """
-    # TODO can the result be cached in a closure variable instead of an attribute?
+    # TODO can the result be cached in a closure variable instead of an
+    #      attribute?
     func_name = func.__name__
     result_attr = "_{}_result".format(func_name)
 
@@ -37,7 +38,7 @@ def cache_response(func):
 
 def ensure_status(func):
     """
-    Decorator for a method to enforce it only being called when the 
+    Decorator for a method to enforce it only being called when the
     statusable is finished.
     """
 
@@ -70,7 +71,8 @@ class Statusable(abc.ABC):
 
     def status(self, max_retries=3):
         if not self._is_final_status():
-            # TODO evaluate if retrying here is needed
+            # TODO evaluate if retrying here is needed, probably better
+            #      in some other place
             attempt = 0
             while attempt < max_retries:
                 try:
@@ -81,11 +83,14 @@ class Statusable(abc.ABC):
                 else:
                     break
             else:
-                msg = "Connection could not be made after {} attempts. Due to exception {}"
-                # TODO: verify if 'e' works here
-                raise ExhaustedAttemptsException(msg.format(max_retries, e))
+                msg = "Connection could not be made after {} attempts. "
+                "Due to exception {}"
+                raise ExhaustedAttemptsException(msg.format(max_retries))
 
         return self.stat_response
+
+    def done(self):
+        return self._is_final_status()
 
 
 class Submission(Statusable):
@@ -140,6 +145,15 @@ class Submission(Statusable):
         if self._is_final_status():
             return all(job._status_success() for job in self.jobs)
         return False
+
+    def __repr__(self):
+        return "Submission({self.id})".format(self=self)
+
+    def __str__(self):
+        msg = "Submission(id={}, final={}, success={})"
+        return msg.format(
+            self.id, self._is_final_status(), self.status_success()
+        )
 
 
 class Job(Statusable):
@@ -259,3 +273,12 @@ class Job(Statusable):
         PNG image as a binary string
         """
         return file_request(self.extraction_image_display_url.format(job=self))
+
+    def __repr__(self):
+        return "Job({self.id})".format(self=self)
+
+    def __str__(self):
+        msg = "Job(id={}, final={}, success={})"
+        return msg.format(
+            self.id, self._is_final_status(), self.status_success()
+        )

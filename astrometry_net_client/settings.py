@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import UserDict, namedtuple
 
 Setting = namedtuple("Setting", "name type verify_func", defaults=(None,))
 

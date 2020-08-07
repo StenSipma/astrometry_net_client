@@ -1,12 +1,14 @@
 from sys import argv
 
+from astropy.io.fits import Header
+
 from astrometry_net_client.client import Session
-from astrometry_net_client.uploads import FileUpload
 from astrometry_net_client.statusables import Submission
+from astrometry_net_client.uploads import FileUpload
 
-
-key_location = "/home/sten/Documents/Projects/PracticalAstronomyCrew/key"
-filename = "/home/sten/Documents/Projects/PracticalAstronomyCrew/test-data/target.200417.00000088.3x3.FR.fits"
+path = "/home/sten/Documents/Projects/PracticalAstronomyCrew"
+key_location = path + "/key"
+filename = path + "/test-data/target.200417.00000088.3x3.FR.fits"
 
 
 def login():
@@ -37,7 +39,9 @@ def main():
     else:
         submission = Submission(3723552)
 
+    print("Before status:", submission)
     resp = submission.status()
+    print("After status:", submission)
 
     print("Response:", resp)
     print("Start: ", submission.processing_started)
@@ -45,20 +49,14 @@ def main():
     print("Calibrations", submission.job_calibrations)
     print("Jobs", submission.jobs)
 
-    for job in submission.jobs:
-        print("Job ID:", job.id)
+    for job in submission:
+        print("Before status:", job)
         resp = job.status()
-        print("Job Response:", resp)
-        print("Job Status:", job.status_success())
-        job.info()
+        print("After Status:", job)
+        resp = job.info()
+        print("Info:", resp)
         wcs = job.wcs_file()
-        print("HISTORY START:")
-        print(wcs["history"])
-        print()
-
-        print("COMMENT START:")
-        print(wcs["comment"])
-        print()
+        print("WCS is Header:", isinstance(wcs, Header))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 import abc
+
 from astrometry_net_client.config import upload_url
-from astrometry_net_client.statusables import Submission
 from astrometry_net_client.request import AuthorizedRequest, PostRequest
+from astrometry_net_client.statusables import Submission
 
 
 class Submitter(abc.ABC):
@@ -30,7 +31,7 @@ class BaseUpload(AuthorizedRequest, PostRequest, Submitter):
     Base class for uploads to be made with the Astrometry.net API. Combines
     some abstact classes useful for an upload request (e.g. a submit method,
     default post request and authorization)
-    
+
     Meant as an abstact class, not to be called directly.
     """
 
@@ -68,7 +69,8 @@ class URLUpload(BaseUpload):
 
 class SourcesUpload(BaseUpload):
     """
-    Class for uploading a list of sources. (inspired by astroquery implementation)
+    Class for uploading a list of sources. (inspired by astroquery
+    implementation)
     """
 
     # TODO: Decide if this is necessary

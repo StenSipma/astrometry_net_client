@@ -4,9 +4,9 @@ import requests
 from astropy.io import fits
 
 from astrometry_net_client.exceptions import (
-    NoSessionError,
-    InvalidSessionError,
     InvalidRequest,
+    InvalidSessionError,
+    NoSessionError,
     UnkownContentError,
 )
 
@@ -67,7 +67,6 @@ class Request(object):
     def _make_request(self):
         payload = {"request-json": json.dumps({**self.data, **self.settings})}
         response = self.method(self.url, data=payload, **self.arguments)
-        print("Response:", response.text)
         self.original_response = response
 
         content_type = response.headers["Content-Type"]
