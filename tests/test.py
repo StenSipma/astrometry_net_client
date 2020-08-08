@@ -1,3 +1,4 @@
+import logging
 from sys import argv
 
 from astropy.io.fits import Header
@@ -11,54 +12,85 @@ key_location = path + "/key"
 filename = path + "/test-data/target.200417.00000088.3x3.FR.fits"
 
 
+class DecreasedOutputFormatter(logging.Formatter):
+    def format(self, record):
+        result = super().format(record)
+        msg = result
+        if len(msg) > 300:
+            result = msg[:100] + " ... " + msg[-20:]
+
+        return result
+
+
+log = logging.getLogger("Testing")
+
+
+def setup_logging(full=False):
+    # Setup logging
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter if full else DecreasedOutputFormatter
+
+    # create formatter
+    formatter = formatter("%(name)s - %(levelname)s - %(message)s")
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logging.basicConfig(handlers=[ch], level=logging.DEBUG)
+
+
 def login():
-    print("Creating session")
+    log.debug("Creating session")
     s = Session(None, key_location=key_location)
 
-    print("Loggin in")
+    log.debug("Loggin in")
     s.login()
 
-    print(s)
-    print(s.id)
+    log.debug(s)
+    log.debug(s.key)
     return s
 
 
 def main():
-    if len(argv) > 1 and argv[1] == "online":
+    if "online" in argv[1:]:
 
         s = login()
         upl = FileUpload(filename, session=s)
 
-        print(upl)
-        print("Uploading")
+        log.debug(upl)
+        log.debug("Uploading")
         submission = upl.submit()
 
-        print("Got submission:")
-        print(submission)
-        print("id", submission.id)
+        log.debug("Got submission: {}".format(submission))
+        log.debug("id {}".format(submission.id))
     else:
         submission = Submission(3723552)
 
-    print("Before status:", submission)
+    log.debug("Before status: {}".format(submission))
     resp = submission.status()
-    print("After status:", submission)
+    log.debug("After status: {}".format(submission))
 
-    print("Response:", resp)
-    print("Start: ", submission.processing_started)
-    print("User Img", submission.user_images)
-    print("Calibrations", submission.job_calibrations)
-    print("Jobs", submission.jobs)
+    log.debug("Response: {}".format(resp))
+    log.debug("Start:  {}".format(submission.processing_started))
+    log.debug("User Img {}".format(submission.user_images))
+    log.debug("Calibrations {}".format(submission.job_calibrations))
+    log.debug("Jobs {}".format(submission.jobs))
 
     for job in submission:
-        print("Before status:", job)
+        log.debug("Before status: {}".format(job))
         resp = job.status()
-        print("After Status:", job)
+        log.debug("After Status: {}".format(job))
 
         resp = job.info()
-        print("Info:", resp)
+        log.debug("Info: {}".format(resp))
         wcs = job.wcs_file()
-        print("WCS is Header:", isinstance(wcs, Header))
+        log.debug("WCS is Header: {}".format(isinstance(wcs, Header)))
 
 
 if __name__ == "__main__":
+    full_logging = "full" in argv[1:]
+
+    setup_logging(full_logging)
     main()

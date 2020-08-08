@@ -1,4 +1,5 @@
 import json
+import logging
 
 import requests
 from astropy.io import fits
@@ -9,6 +10,8 @@ from astrometry_net_client.exceptions import (
     NoSessionError,
     UnkownContentError,
 )
+
+log = logging.getLogger(__name__)
 
 
 class Request(object):
@@ -66,13 +69,18 @@ class Request(object):
 
     def _make_request(self):
         payload = {"request-json": json.dumps({**self.data, **self.settings})}
+
+        log.debug("Sending {!r} with payload {}".format(self, payload))
         response = self.method(self.url, data=payload, **self.arguments)
+        log.debug("Retrieved response: {}".format(response.text))
+
         self.original_response = response
 
         content_type = response.headers["Content-Type"]
 
         # case where the response is JSON as text
         if content_type.startswith("text/plain"):
+            log.debug("Text response detected")
             response = response.json()
             self.response = response
 
@@ -91,8 +99,10 @@ class Request(object):
 
         # case where a file is returned, we want to return the raw bytes
         elif content_type in self._raw_content_types:
+            log.debug("Raw file response detected")
             self.response = response.content
         else:
+            log.error("Unknown response content {}".format(content_type))
             msg = "Request produced a response with unknown content type {}"
             raise UnkownContentError(msg.format(content_type))
 
@@ -107,6 +117,13 @@ class Request(object):
         _make_request() method.
         """
         return self._make_request()
+
+    def __repr__(self):
+        msg = (
+            "Request({self.url}, method={self.method}, data={self.data},"
+            " settings={self.settings}, args={self.arguments})"
+        )
+        return msg.format(self=self)
 
 
 class PostRequest(Request):
@@ -152,7 +169,7 @@ class AuthorizedRequest(Request):
         try:
             return super()._make_request()
         except InvalidSessionError:
-            print("Session expired, loggin in again")
+            log.info("Session expired, loggin in again")
             self.session.login(force=True)
             # update the session key for the request as well
             self.data["session"] = self.session.key

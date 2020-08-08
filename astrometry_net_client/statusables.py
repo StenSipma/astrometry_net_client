@@ -1,4 +1,5 @@
 import abc
+import logging
 from functools import wraps
 
 from astropy.io import fits
@@ -14,20 +15,22 @@ from astrometry_net_client.request import (
     fits_file_request,
 )
 
+log = logging.getLogger(__name__)
+
 
 def cache_response(func):
     """
     Wrapper around a function to cache its result in an attribute of the
     object. Name of the attribute is: _<funcname>_result
     """
-    # TODO can the result be cached in a closure variable instead of an
-    #      attribute?
     func_name = func.__name__
     result_attr = "_{}_result".format(func_name)
 
     @wraps(func)
     def wrapper(self, *args, force=False, **kwargs):
         if not force and hasattr(self, result_attr):
+            log_msg = "Result {} already cached. Reusing..."
+            log.debug(log_msg.format(result_attr))
             return getattr(self, result_attr)
         result = func(self, *args, **kwargs)
         setattr(self, result_attr, result)
@@ -68,6 +71,8 @@ class Statusable(abc.ABC):
 
     def status(self, max_retries=3):
         if not self.done():
+            log_msg = "Statusable {} not done, querying status..."
+            log.debug(log_msg.format(self.__class__.__name__))
             # TODO evaluate if retrying here is needed, probably better
             #      in some other place
             attempt = 0
@@ -75,13 +80,17 @@ class Statusable(abc.ABC):
                 try:
                     self.stat_response = self._make_status_request()
                 except Exception as e:
-                    print("Failed with exception", e)
+                    log_msg = "Failed with exception: {}. Trying again..."
+                    log.warn(log_msg.format(e))
                     attempt += 1
                 else:
                     break
+
             else:
-                msg = "Connection could not be made after {} attempts. "
-                "Due to exception {}"
+                msg = (
+                    "Connection could not be made after {} attempts. "
+                    "Due to exception {}"
+                )
                 raise ExhaustedAttemptsException(msg.format(max_retries))
 
         return self.stat_response
@@ -102,6 +111,7 @@ class Submission(Statusable):
     """
 
     # TODO: when are there multiple jobs?
+    #       answer(?) only when manually uploading
     url = BASE_URL + "/submissions/{submission.id}"
 
     def __init__(self, submission_id):
@@ -112,8 +122,8 @@ class Submission(Statusable):
     def __iter__(self):
         """
         Allowes to easily iterate over the jobs of a submission by doing:
-         >>> for job in submission:
-         ...    process_job()
+        >>> for job in submission:
+        ...    process_job()
         """
         return iter(self.jobs)
 
@@ -139,11 +149,17 @@ class Submission(Statusable):
         We define 'final' here as processing has finished and the jobs have
         started, assuming there is always at least one job.
         """
-        return hasattr(self, "jobs") and len(self.jobs) > 0
+        try:
+            proc_finished = self.processing_finished is not None
+        except AttributeError:
+            return False
+
+        jobs_created = hasattr(self, "jobs") and len(self.jobs) > 0
+        return proc_finished and jobs_created
 
     def _status_success(self):
         if self.done():
-            return all(job.success() for job in self.jobs)
+            return all(job.success() for job in self)
         return False
 
     def __repr__(self):
@@ -206,7 +222,6 @@ class Job(Statusable):
         r = Request(self.url + self.info_suffix)
         response = r.make()
 
-        self.info_response = response
         self.objects_in_field = response["objects_in_field"]
         self.machine_tags = response["machine_tags"]
         self.tags = response["tags"]
