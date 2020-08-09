@@ -4,6 +4,7 @@ from sys import argv
 from astropy.io.fits import Header
 
 from astrometry_net_client.session import Session
+from astrometry_net_client.settings import Settings
 from astrometry_net_client.statusables import Submission
 from astrometry_net_client.uploads import FileUpload
 
@@ -54,10 +55,14 @@ def login():
 
 
 def main():
+    settings = Settings()
+    settings.set_scale_range(10, 20)
+    log.debug("Using settings: {}".format(settings))
+
     if "online" in argv[1:]:
 
-        s = login()
-        upl = FileUpload(filename, session=s)
+        session = login()
+        upl = FileUpload(filename, session=session, settings=settings)
 
         log.debug(upl)
         log.debug("Uploading")
