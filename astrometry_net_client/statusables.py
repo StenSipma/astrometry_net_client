@@ -1,5 +1,6 @@
 import abc
 import logging
+import time
 from functools import wraps
 
 from astropy.io import fits
@@ -95,7 +96,75 @@ class Statusable(abc.ABC):
 
         return self.stat_response
 
+    def until_done(self, start=4, end=None, timeout=None):
+        """
+        Blocking method which waits for the Statusable to be finished.
+
+        This method will keep querying the :py:func:`status` until the
+        statusable is :py:func:`done`. Will sleep in increasing intervals
+        between each status query, to avoid overloading the API server
+        (and give room for possible threading). The sleeping behaviour is
+        determined by :py:arg:`start` and :py:arg:`end`.
+
+        It is possible to specify a timeout, in seconds, after which a
+        :py:exception:`TimeoutError` is raised.
+
+        Examples
+        --------
+        Will wait forever and doubles the sleep time infinitely.
+        >>> stat.until_done()
+
+        Will wait forever, and doubles the sleep time until it is equal to 60s
+        >>> stat.until_done(end=60)
+
+        Waits until 120s have passed (default sleep behaviour)
+        >>> stat.until_done(timeout=120s)
+        TimeoutError
+
+
+        Parameters
+        ----------
+        start: int
+            Determines the intitial sleep time, which is doubled after each
+            query. Defaults to 4s.
+        end: int or None
+            If specified, gives a maximal value for the sleep time. Otherwise
+            the sleep time will be doubled forever.
+        timeout: int or None
+            If specified will raise a :py:exception:`TimeoutError` when the
+            method has been running for the given time.
+
+        Returns
+        -------
+        Dictionary with the status response (content)
+        """
+        # TODO perhaps a default end of 300 is better ?
+        now = time.time  # alias the function for readablility
+        start_time = now()
+
+        sleep_time = start
+        log_msg = (
+            "Starting the until done loop with: sleep_time = {}, timeout = {}"
+        )
+        log.debug(log_msg.format(sleep_time, timeout))
+        while timeout is None or start_time - now() < timeout:
+            response = self.status()
+            log.debug("Current status response: {}".format(response))
+
+            if self.done():
+                break
+
+            log.debug("Not done, sleeping for {}s".format(sleep_time))
+            time.sleep(sleep_time)
+            sleep_time *= 2
+            sleep_time = end if end and end < sleep_time else sleep_time
+        else:
+            raise TimeoutError()
+
+        return self.stat_response
+
     def success(self):
+        # TODO maybe return None when you cannot yet know ?
         return self._is_final_status() and self._status_success()
 
     def done(self):

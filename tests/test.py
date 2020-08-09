@@ -74,7 +74,7 @@ def main():
         submission = Submission(3723552)
 
     log.debug("Before status: {}".format(submission))
-    resp = submission.status()
+    resp = submission.until_done()
     log.debug("After status: {}".format(submission))
 
     log.debug("Response: {}".format(resp))
@@ -85,11 +85,15 @@ def main():
 
     for job in submission:
         log.debug("Before status: {}".format(job))
-        resp = job.status()
+        resp = job.until_done()
         log.debug("After Status: {}".format(job))
 
         resp = job.info()
         log.debug("Info: {}".format(resp))
+        # TODO: make sure to only do this when job is successfull
+        # TODO:  decide how to handle... exception by wrapping around
+        # TODO:  invalid request of this type will result in response 505
+        # TODO: Check the response status at request level.
         wcs = job.wcs_file()
         log.debug("WCS is Header: {}".format(isinstance(wcs, Header)))
 
