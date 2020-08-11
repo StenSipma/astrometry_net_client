@@ -96,7 +96,7 @@ class Statusable(abc.ABC):
 
         return self.stat_response
 
-    def until_done(self, start=4, end=None, timeout=None):
+    def until_done(self, start=4, end=300, timeout=None):
         """
         Blocking method which waits for the Statusable to be finished.
 
@@ -107,15 +107,18 @@ class Statusable(abc.ABC):
         determined by :py:arg:`start` and :py:arg:`end`.
 
         It is possible to specify a timeout, in seconds, after which a
-        :py:exception:`TimeoutError` is raised.
+        :py:exc:`TimeoutError` is raised.
 
         Examples
         --------
-        Will wait forever and doubles the sleep time infinitely.
+        Will wait forever and doubles the sleep time until it reaches 300.
         >>> stat.until_done()
 
         Will wait forever, and doubles the sleep time until it is equal to 60s
         >>> stat.until_done(end=60)
+
+        Will wait forever and doubles the sleep time indefinitely
+        >>> stat.until_done(end=None)
 
         Waits until 120s have passed (default sleep behaviour)
         >>> stat.until_done(timeout=120s)
@@ -131,7 +134,7 @@ class Statusable(abc.ABC):
             If specified, gives a maximal value for the sleep time. Otherwise
             the sleep time will be doubled forever.
         timeout: int or None
-            If specified will raise a :py:exception:`TimeoutError` when the
+            If specified will raise a :py:exc:`TimeoutError` when the
             method has been running for the given time.
 
         Returns
@@ -237,6 +240,9 @@ class Submission(Statusable):
     def __str__(self):
         msg = "Submission(id={}, final={}, success={})"
         return msg.format(self.id, self.done(), self.success())
+
+    def __hash__(self):
+        return hash(self.id)
 
 
 class Job(Statusable):
@@ -362,3 +368,6 @@ class Job(Statusable):
     def __str__(self):
         msg = "Job(id={}, final={}, success={})"
         return msg.format(self.id, self.done(), self.success())
+
+    def __hash__(self):
+        return hash(self.id)
