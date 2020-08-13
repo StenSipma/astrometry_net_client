@@ -53,7 +53,7 @@ class Request(object):
     in the `original_response` attribute.
     """
 
-    _method_dict = {"post": requests.post, "get": requests.get}
+    _allowed_methods = {"post", "get"}
     _raw_content_types = {"application/fits", "image/jpeg", "image/png"}
 
     def __init__(
@@ -64,7 +64,15 @@ class Request(object):
         self.arguments = kwargs
         if url is not None:
             self.url = url
-        self.method = self._method_dict[method.lower()]
+
+        # We have to get the attribute like this, otherwise we cannot
+        # monkeypatch (e.g. replace requests.get) in the test cases
+        if method in self._allowed_methods:
+            self.method = getattr(requests, method)
+        else:
+            err_msg = "Method argument must be one of {}"
+            raise ValueError(err_msg.format(self._allowed_methods))
+
         self.response = None
 
     def _make_request(self):

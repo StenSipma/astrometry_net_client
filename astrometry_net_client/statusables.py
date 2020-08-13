@@ -88,10 +88,7 @@ class Statusable(abc.ABC):
                     break
 
             else:
-                msg = (
-                    "Connection could not be made after {} attempts. "
-                    "Due to exception {}"
-                )
+                msg = "Connection could not be made after {} attempts. "
                 raise ExhaustedAttemptsException(msg.format(max_retries))
 
         return self.stat_response

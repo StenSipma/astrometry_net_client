@@ -1,7 +1,10 @@
 PY=python3
 PIP=pip
+TEST=pytest
 
 PY_FILES=astrometry_net_client/*.py tests/*.py setup.py
+
+TEST_ARGS=-v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
@@ -30,9 +33,12 @@ dependencies:
 documentation:
 	make --directory=docs/ html
 
-# Testing (will be improved)
+# Testing. The default test does not include the online tests 
 test:
-	$(PY) tests/test.py
+	$(TEST) $(TEST_ARGS) -m 'not online' tests/
+# Includes all tests, so also those that query the actual api.
+test-all:
+	$(TEST) $(TEST_ARGS) tests/
 
 # Formatting and linting
 format:
