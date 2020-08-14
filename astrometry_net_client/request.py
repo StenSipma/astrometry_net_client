@@ -84,6 +84,9 @@ class Request(object):
 
         self.original_response = response
 
+        if response.status_code != 200:
+            response.raise_for_status()
+
         content_type = response.headers["Content-Type"]
 
         # case where the response is JSON as text

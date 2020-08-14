@@ -8,6 +8,7 @@ class MockJobStatusResponseSuccess:
 
     _response = {"status": "success"}
     headers = {"Content-Type": "text/plain"}
+    status_code = 200
 
     @staticmethod
     def text():

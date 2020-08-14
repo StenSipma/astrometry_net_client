@@ -1,6 +1,7 @@
 import pytest
 from astropy.io.fits import Header
 
+from astrometry_net_client.exceptions import StatusFailedException
 from astrometry_net_client.statusables import Job
 
 
@@ -34,4 +35,6 @@ def test_job_status_failed(failed_job):
     assert not failed_job.success()
     assert response == {"status": "failure"}
     assert failed_job.resp_status == "failure"
-    # TODO add test which tries to call the wcs_file and fails
+
+    with pytest.raises(StatusFailedException):
+        failed_job.wcs_file()

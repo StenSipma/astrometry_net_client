@@ -7,7 +7,7 @@ from astropy.io import fits
 
 from astrometry_net_client.config import BASE_URL
 from astrometry_net_client.exceptions import (
-    ExhaustedAttemptsException,
+    StatusFailedException,
     StillProcessingException,
 )
 from astrometry_net_client.request import (
@@ -35,6 +35,33 @@ def cache_response(func):
             return getattr(self, result_attr)
         result = func(self, *args, **kwargs)
         setattr(self, result_attr, result)
+        return result
+
+    return wrapper
+
+
+def ensure_status_success(func):
+    """
+    Decorator for a method to enforce it only being called when the
+    statusable is successful (and therefore also finished).
+
+    Raises
+    ------
+        StatusFailedException:
+            when the :py:meth:`success` evaluates to ``False`` but
+            :py:meth:`done` to ``True``.
+        StillProcessingException:
+            when :py:meth:`done` is ``False``
+    """
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        self.status()
+        if not self.done():
+            raise StillProcessingException()
+        if not self.success():
+            raise StatusFailedException()
+        result = func(self, *args, **kwargs)
         return result
 
     return wrapper
@@ -70,26 +97,25 @@ class Statusable(abc.ABC):
     def _status_success(self):
         pass
 
-    def status(self, max_retries=3):
-        if not self.done():
+    def status(self, force=False):
+        """
+        Method which queries the status if it is needed.
+
+        ``status`` is a method which queries the status of the statusable
+        if the current / last retrieved status is not :py:meth:`done` (or no
+        status is known). If an earlier queried status signals that the
+        statusable is finished, no further request is made.
+
+        Parameters
+        ----------
+        force: bool
+            Can be set to true to make a status request regardless of the
+            result of :py:meth:`done`.
+        """
+        if force or not self.done():
             log_msg = "Statusable {} not done, querying status..."
             log.debug(log_msg.format(self.__class__.__name__))
-            # TODO evaluate if retrying here is needed, probably better
-            #      in some other place
-            attempt = 0
-            while attempt < max_retries:
-                try:
-                    self.stat_response = self._make_status_request()
-                except Exception as e:
-                    log_msg = "Failed with exception: {}. Trying again..."
-                    log.warn(log_msg.format(e))
-                    attempt += 1
-                else:
-                    break
-
-            else:
-                msg = "Connection could not be made after {} attempts. "
-                raise ExhaustedAttemptsException(msg.format(max_retries))
+            self.stat_response = self._make_status_request()
 
         return self.stat_response
 
@@ -164,10 +190,28 @@ class Statusable(abc.ABC):
         return self.stat_response
 
     def success(self):
+        """
+        Evaluates if the statusable was successful.
+
+        Will always be ``False`` if :py:meth:`done` is ``False``.
+
+        Returns
+        -------
+        bool
+        """
         # TODO maybe return None when you cannot yet know ?
         return self._is_final_status() and self._status_success()
 
     def done(self):
+        """
+        Evaluates if the last :py:meth:`status` result is the final result.
+
+        Returns
+        -------
+        bool:
+            ``True``, when the last response from `status` is the final status
+            (e.g. it does not change anymore). ``False`` otherwise
+        """
         return self._is_final_status()
 
 
@@ -288,7 +332,7 @@ class Job(Statusable):
     def _status_success(self):
         return self.resp_status == "success"
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def info(self):
         r = Request(self.url + self.info_suffix)
@@ -304,7 +348,7 @@ class Job(Statusable):
 
         return response
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def wcs_file(self):
         """
@@ -315,27 +359,27 @@ class Job(Statusable):
         header = fits.Header.fromstring(binary_wcs)
         return header
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def new_fits_file(self):
         return fits_file_request(self.fits_file_url.format(job=self))
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def rdls_file(self):
         return fits_file_request(self.rdls_file_url.format(job=self))
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def axy_file(self):
         return fits_file_request(self.axy_file_url.format(job=self))
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def corr_file(self):
         return fits_file_request(self.corr_file_url.format(job=self))
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def annotated_display(self):
         """
@@ -343,7 +387,7 @@ class Job(Statusable):
         """
         return file_request(self.annotated_display_url.format(job=self))
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def red_green_image_display(self):
         """
@@ -351,7 +395,7 @@ class Job(Statusable):
         """
         return file_request(self.red_green_image_display_url.format(job=self))
 
-    @ensure_status
+    @ensure_status_success
     @cache_response
     def extraction_image_display(self):
         """

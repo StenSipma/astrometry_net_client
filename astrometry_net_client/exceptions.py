@@ -23,6 +23,10 @@ class StillProcessingException(RequestException):
     pass
 
 
+class StatusFailedException(RequestException):
+    pass
+
+
 class UnkownContentError(RequestException):
     pass
 
