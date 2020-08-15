@@ -2,7 +2,7 @@ PY=python3
 PIP=pip
 TEST=pytest
 
-PY_FILES=astrometry_net_client/*.py tests/*.py setup.py
+PY_FILES=astrometry_net_client/*.py tests/*.py setup.py examples/*.py
 
 TEST_ARGS=-v
 

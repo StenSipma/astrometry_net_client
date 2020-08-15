@@ -1,6 +1,11 @@
+import logging
+import time
+
 from astrometry_net_client.session import Session
 from astrometry_net_client.settings import Settings
 from astrometry_net_client.uploads import FileUpload
+
+log = logging.getLogger(__name__)
 
 
 class Client:
@@ -24,16 +29,24 @@ class Client:
     def __init__(self, session=None, settings=None, **kwargs):
         # TODO, make session optional?
         if session is None:
-            self.session = Session(**kwargs)
+            args = {
+                k: v
+                for k, v in kwargs.items()
+                if k in {"api_key", "key_location"}
+            }
+            self.session = Session(**args)
         else:
             self.session = session
 
         if settings is None:
-            setting_args = {k: v for k, v in kwargs if k in Settings._settings}
+            setting_args = {
+                k: v for k, v in kwargs.items() if k in Settings._settings
+            }
             self.settings = Settings(**setting_args)
         else:
             self.settings = Settings(settings)
 
+        log.info("Logging in")
         self.session.login()
 
         self.jobs = []
@@ -62,13 +75,23 @@ class Client:
             upl_settings.update(settings)
 
         upl = FileUpload(filename, session=self.session, settings=upl_settings)
+        start = time.time()
         submission = upl.submit()
+
+        msg = "File {} submitted, waiting for it to finish"
+        log.info(msg.format(filename))
 
         submission.until_done()
 
         # pretty much guarenteed to have exactly one job
         job = submission.jobs[0]
         job.until_done()
+        end = time.time()
+
+        msg = "Processing of file {} finished in {}s"
+        log.info(msg.format(filename, end - start))
+
         if job.success():
             return job.wcs_file()
+
         return None
