@@ -12,7 +12,7 @@ ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses
 
 default: check-in-venv format lint install
 
-all: default test documentation
+all: default dependencies test documentation
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
@@ -63,3 +63,5 @@ clean-package:
 clean-docs:
 	make --directory=docs clean
 
+virt-env:
+	python3 -m venv .env
