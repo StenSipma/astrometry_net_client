@@ -19,8 +19,8 @@ The structure of these classes tries to follow the pattern of the API itself, wh
 
 Using this package, these steps are (note that this is not the ideal way to upload multiple files)::
 
-        from astrometry_net_client.session import Session
-        from astrometry_net_client.uploads import FileUpload
+        from astrometry_net_client import Session
+        from astrometry_net_client import FileUpload
 
         s = Session(api_key='xxxxxxxxx')
         upl = FileUpload('some/file/name', session=s) # 1.
@@ -31,6 +31,15 @@ Using this package, these steps are (note that this is not the ideal way to uplo
         if job.success():
             wcs = job.wcs_file()                      # 5. (only if successful)
         print(job.info())                             # works even though the job failed
+
+Or with the higher level ``Client``::
+
+        from astrometry_net_client import Client
+
+        c = Client(api_key='xxxxxxxxxx')
+
+        # WARNING: this can take a while, as it blocks until the file is solved.
+        wcs = c.upload_file(filename)  # will be None if upload is not successful
 
 One of the core ideas of this package is to try and make the minimal amount of requests possible and make them at a clear time. This is realized by the following *initialize & send* pattern::
 
