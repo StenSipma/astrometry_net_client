@@ -121,6 +121,3 @@ def test_data_override():
     """
     settings = Settings()
     assert isinstance(settings.data, dict)
-
-
-# TODO test normal dict functions
