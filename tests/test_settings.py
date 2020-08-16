@@ -1,6 +1,6 @@
 import pytest
 
-from astrometry_net_client.settings import Settings
+from astrometry_net_client import Settings
 
 
 def test_dict():

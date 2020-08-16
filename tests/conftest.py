@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from astrometry_net_client.statusables import Job
+from astrometry_net_client import Job
 
 
 class MockJobStatusResponseSuccess:

@@ -5,7 +5,7 @@ from sys import argv
 
 from astropy.io import fits
 
-from astrometry_net_client.client import Client
+from astrometry_net_client import Client
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)

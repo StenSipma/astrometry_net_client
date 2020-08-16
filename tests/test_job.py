@@ -1,8 +1,8 @@
 import pytest
 from astropy.io.fits import Header
 
+from astrometry_net_client import Job
 from astrometry_net_client.exceptions import StatusFailedException
-from astrometry_net_client.statusables import Job
 
 
 @pytest.mark.mocked

@@ -127,7 +127,7 @@ class Statusable(abc.ABC):
         statusable is :py:func:`done`. Will sleep in increasing intervals
         between each status query, to avoid overloading the API server
         (and give room for possible threading). The sleeping behaviour is
-        determined by :py:arg:`start` and :py:arg:`end`.
+        determined by ``start`` and ``end``.
 
         It is possible to specify a timeout, in seconds, after which a
         :py:exc:`TimeoutError` is raised.
@@ -162,7 +162,7 @@ class Statusable(abc.ABC):
 
         Returns
         -------
-        Dictionary with the status response (content)
+            dict: Dictionary with the status response (content)
         """
         # TODO perhaps a default end of 300 is better ?
         now = time.time  # alias the function for readablility
