@@ -35,10 +35,11 @@ documentation:
 
 # Testing. The default test does not include the online tests 
 test:
-	$(TEST) $(TEST_ARGS) -m 'not online' tests/
+	$(TEST) $(TEST_ARGS) -m 'not online or not long' tests/
+
 # Includes all tests, so also those that query the actual api.
 test-all:
-	$(TEST) $(TEST_ARGS) tests/
+	$(TEST) $(TEST_ARGS) -m 'not long' tests/
 
 # Formatting and linting
 format:
