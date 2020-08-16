@@ -48,7 +48,7 @@ def main():
 
         try:
             # upload and wait for the result
-            wcs = c.upload_file(filename)
+            wcs = c.calibrate_file_wcs(filename)
         except OSError:
             log.info("File not found:", filename, "ignoring...")
             continue

@@ -1,11 +1,14 @@
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from astrometry_net_client.session import Session
 from astrometry_net_client.settings import Settings
 from astrometry_net_client.uploads import FileUpload
 
 log = logging.getLogger(__name__)
+
+MAX_WORKERS = 10
 
 
 class Client:
@@ -49,12 +52,101 @@ class Client:
         log.info("Logging in")
         self.session.login()
 
-        self.jobs = []
-        self.submissions = []
+    def upload_files_gen(self, files_iter, workers=MAX_WORKERS):
+        """
+        Generator which uploads a number of files concurrently,
+        yielding the :py:class:`astrometry_net_client.statusables.Job`
+        & filename when done.
+
+        Parameters
+        ----------
+        files_iter: iterable
+            Some iterable containing paths to the files which will be
+            uploaded.
+        workers: int, optional
+            A positive integer, controlling the amount of workers to
+            use for the processing. Will not exceed the value of
+            :py:const:`MAX_WORKERS`.
+
+        Yields
+        ------
+        (:py:class:`astrometry_net_client.statusables.Job`, str):
+            A tuple containing the finished
+            :py:class:`astrometry_net_client.statusables.Job` and the
+            corresponding filename. Yields when the Job is finished.
+            NOTE: Order of yielded filenames can (and likely will)
+            be different from the given ``files_iter``
+        """
+        workers = min(MAX_WORKERS, workers)
+        executor = ThreadPoolExecutor(workers=workers)
+        log.info("Spawned executor {}".format(executor))
+
+        # submit the files & save which future corresponds to which
+        #  filename
+        future_to_file = {
+            executor.submit(self.upload_file, filename): filename
+            for filename in files_iter
+        }
+
+        # iterate over the results once they are completed.
+        for future in as_completed(future_to_file):
+            result_filename = future_to_file[future]
+            try:
+                res_job = future.result()
+            except Exception as e:
+                err_msg = "File {} stopped with exception {}"
+                log.error(err_msg.format(result_filename, e))
+            else:
+                yield res_job, result_filename
 
     def upload_file(self, filename, settings=None):
         """
-        Uploads a file, returning the wcs header if it succeeds
+        Uploads file and returns completed job when finished solving.
+
+        Parameters
+        ----------
+        filename: str
+            Location + name of the file to upload.
+        settings: :py:class:`astrometry_net_client.settings.Settings`
+            An optional settings dict which only applies to this specific
+            upload. Will override the default settings with which the
+            :py:class:`Client` was constructed.
+
+        Returns
+        -------
+            :py:class:`astrometry_net_client.statusables.Job`: The job of
+            the resulting upload. NOTE: It is possible that the job did not
+            succeed, therefore check with
+            :py:class:`astrometry_net_client.statusables.Job.success`
+            if it did.
+        """
+        upl_settings = self.settings
+        if settings is not None:
+            upl_settings.update(settings)
+
+        upl = FileUpload(filename, session=self.session, settings=upl_settings)
+        start = time.time()
+        submission = upl.submit()
+
+        msg = "File {} submitted, waiting for it to finish"
+        log.info(msg.format(filename))
+
+        submission.until_done()  # blocks here
+
+        # pretty much guarenteed to have exactly one job
+        job = submission.jobs[0]
+
+        job.until_done()  # blocks here
+        end = time.time()
+
+        msg = "Processing of file {} finished in {}s"
+        log.info(msg.format(filename, end - start))
+
+        return job
+
+    def calibrate_file_wcs(self, filename, settings=None):
+        """
+        Uploads a file, returning the wcs header if it succeeds.
 
         Parameters
         ----------
@@ -70,28 +162,8 @@ class Client:
         :py:class:`astropy.io.fits.Header` or None
             Returns the Header if successful, None otherwise.
         """
-        upl_settings = self.settings
-        if settings is not None:
-            upl_settings.update(settings)
-
-        upl = FileUpload(filename, session=self.session, settings=upl_settings)
-        start = time.time()
-        submission = upl.submit()
-
-        msg = "File {} submitted, waiting for it to finish"
-        log.info(msg.format(filename))
-
-        submission.until_done()
-
-        # pretty much guarenteed to have exactly one job
-        job = submission.jobs[0]
-        job.until_done()
-        end = time.time()
-
-        msg = "Processing of file {} finished in {}s"
-        log.info(msg.format(filename, end - start))
+        job = self.upload_file(filename, settings=settings)
 
         if job.success():
             return job.wcs_file()
-
         return None
