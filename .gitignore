@@ -130,3 +130,6 @@ dmypy.json
 
 # Vim You Complete Me config file
 .ycm_extra_conf.py
+
+# File for the key API key
+key
