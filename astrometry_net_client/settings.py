@@ -1,38 +1,85 @@
+import numbers
 from collections import UserDict, namedtuple
 
 # TODO idea, replace the settings with descriptors ?
-#      e.g. an angle descriptor, which can handle astropy units
-#      and convert to the appropriate units (e.g. if radians are given)
+# TODO  e.g. an angle descriptor, which can handle astropy units
+# TODO  and convert to the appropriate units (e.g. if radians are given)
 
 # TODO idea, read settings from some file for persistent use.
 
-Setting = namedtuple("Setting", "name type verify_func", defaults=(None,))
+# TODO use the same format as the astroquery constraints
+Setting = namedtuple(
+    "Setting", "name type verify_func verify_mesg", defaults=(None, None,)
+)
 
 _allowed_settings = {
-    Setting("allow_commercial_use", str, lambda x: x in {"d", "y", "n"}),
-    Setting("allow_modifications", str, lambda x: x in {"d", "y", "n", "sa"}),
-    Setting("publicly_visible", str, lambda x: x in {"y", "n"}),
+    Setting(
+        "allow_commercial_use",
+        str,
+        lambda x: x in {"d", "y", "n"},
+        "Must be one of: d, y, n",
+    ),
+    Setting(
+        "allow_modifications",
+        str,
+        lambda x: x in {"d", "y", "n", "sa"},
+        "Must be one of: d, y, n, sa",
+    ),
+    Setting(
+        "publicly_visible", str, lambda x: x in {"y", "n"}, "Must be: y or n"
+    ),
     Setting(
         "scale_units",
         str,
         lambda x: x in {"degwidth", "arcminwidth", "arcsecperpix"},
+        "Must be one of: 'degwidth', 'arcminwidth', 'arcsecperpix'",
     ),
-    Setting("scale_type", str, lambda x: x in {"ul", "ev"}),
-    Setting("scale_lower", float),
-    Setting("scale_upper", float),
-    Setting("scale_est", float),
-    Setting("scale_err", float, lambda x: x >= 0.0 and x <= 100.0),
-    Setting("center_ra", float, lambda x: x >= 0.0 and x <= 360.0),
-    Setting("center_dec", float, lambda x: x >= -90.0 and x <= 90.0),
-    Setting("radius", float),
-    Setting("downsample_factor", float, lambda x: x > 1),
-    Setting("tweak_order", int),
+    Setting(
+        "scale_type",
+        str,
+        lambda x: x in {"ul", "ev"},
+        "Must be one of: ul, ev",
+    ),
+    Setting("scale_lower", numbers.Real),
+    Setting("scale_upper", numbers.Real),
+    Setting("scale_est", numbers.Real),
+    Setting(
+        "scale_err",
+        numbers.Real,
+        lambda x: x >= 0.0 and x <= 100.0,
+        "Must be in range [0.0, 100.0]",
+    ),
+    Setting(
+        "center_ra",
+        numbers.Real,
+        lambda x: x >= 0.0 and x <= 360.0,
+        "Must be in range [0.0, 360.0]",
+    ),
+    Setting(
+        "center_dec",
+        numbers.Real,
+        lambda x: x >= -90.0 and x <= 90.0,
+        "Must be in range [-90.0, 90.0]",
+    ),
+    Setting("radius", numbers.Real),
+    Setting(
+        "downsample_factor",
+        numbers.Real,
+        lambda x: x >= 1,
+        "Must be greater or equal to 1",
+    ),
+    Setting("tweak_order", numbers.Integral),
     Setting("use_sextractor", bool),
     Setting("crpix_center", bool),
-    Setting("parity", int, lambda x: x in {0, 1, 2}),
-    Setting("image_width", int),
-    Setting("image_height", int),
-    Setting("positional_error", float),
+    Setting(
+        "parity",
+        numbers.Integral,
+        lambda x: x in {0, 1, 2},
+        "Must be one of 0, 1, 2",
+    ),
+    Setting("image_width", numbers.Integral),
+    Setting("image_height", numbers.Integral),
+    Setting("positional_error", numbers.Real),
 }
 
 
@@ -55,34 +102,49 @@ class Settings(UserDict):
     >>> from astrometry_net_client.settings import Settings
     >>> settings = Settings(parity=2)
     >>> settings.image_width = 1000
-    >>> settings['image_height'] = 2000
+    >>> settings["image_height"] = 2000
+    >>> settings.update({"publicly_visible": "y", "use_sextractor": True})
     >>> settings
-    {'parity': 2, 'image_width': 1000, 'image_height': 2000}
-    >>> settings.set_scale_range(10, 20)
+    {
+        "publicly_visible": "y",
+        "use_sextractor": True,
+        "parity": 2,
+        "image_width": 1000,
+        "image_height": 2000,
+    }
+    >>> # Modification of the settings object
+    >>> del settings["parity"]
+    >>> settings.use_sextractor = False
+    >>> settings["publicly_visible"] = "n"
+    >>> settings.update({"image_height": 500, "image_width": 1000})
     >>> settings
-    {'parity': 2, 'image_width': 1000, 'image_height': 2000,
-            'scale_lower': 10, 'scale_upper': 20, 'scale_units': 'arcminwidth',
-            'scale_type': 'ul'}
+    {
+        "publicly_visible": "n",
+        "use_sextractor": False,
+        "image_width": 1000,
+        "image_height": 500,
+    }
     """
 
     _settings = {s.name: s for s in _allowed_settings}
 
     def __setitem__(self, key, value):
-        error_msg = ""
         if key not in Settings._settings:
             msg = "{} is not an allowed setting. Must be one of: {}"
-            error_msg = msg.format(key, Settings._settings)
-        elif not isinstance(value, Settings._settings[key].type):
-            msg = "Value does not have the correct type. Excpected {} was {}"
-            error_msg.format(Settings._settings[key].type, type(value))
-
-        elif Settings._settings[key].verify_func and not Settings._settings[
-            key
-        ].verify_func(value):
-            error_msg = f"Value {value} is not allowed for the setting {key}."
-
-        if error_msg:
+            error_msg = msg.format(key, list(Settings._settings.keys()))
             raise KeyError(error_msg)
+
+        setting = Settings._settings[key]
+
+        if not isinstance(value, setting.type):
+            msg = "Value does not have the correct type."
+            msg += " Excpected {} was {}"
+            error_msg = msg.format(setting.type, type(value))
+            raise TypeError(error_msg)
+
+        if setting.verify_func and not setting.verify_func(value):
+            error_msg = "Value {} is not allowed for the setting {}: {}"
+            raise ValueError(error_msg.format(value, key, setting.verify_mesg))
 
         self.data[key] = value
 
@@ -120,10 +182,15 @@ class Settings(UserDict):
             ``lower`` values. Defaults to ``'arcminwidth'``. Can be one of:
             ``'arcminwidth'``,``arcsecperpix`` or ``'degwidth'``.
         """
-        self.scale_lower = lower
-        self.scale_upper = upper
-        self.scale_units = unit
-        self.scale_type = "ul"
+        # Make a tmp Settings object to verify correctness of arguments
+        tmp = Settings()
+        tmp.scale_units = unit
+        tmp.scale_lower = lower
+        tmp.scale_upper = upper
+        tmp.scale_type = "ul"
+
+        # Commit changes, only if all are valid (e.g. no exception was raised)
+        self.update(tmp)
 
     def set_scale_estimate(self, estimate, error, unit="arcminwidth"):
         """
@@ -153,7 +220,14 @@ class Settings(UserDict):
             ``lower`` values. Defaults to ``'arcminwidth'``. Can be one of:
             ``'arcminwidth'``,``arcsecperpix`` or ``'degwidth'``.
         """
-        self.scale_est = estimate
-        self.scale_err = error
-        self.scale_units = unit
-        self.scale_type = "ev"
+        # TODO refactor into a decorator, or make some verify function
+
+        # Make a tmp Settings object to verify correctness of arguments
+        tmp = Settings()
+        tmp.scale_units = unit
+        tmp.scale_est = estimate
+        tmp.scale_err = error
+        tmp.scale_type = "ev"
+
+        # Commit changes, only if all are valid (e.g. no exception was raised)
+        self.update(tmp)
