@@ -83,4 +83,7 @@ The main page can then be found at (assuming you are in the project root) ``./do
 
 Examples
 --------
-For examples see the (upcomming) examples directory.
+Some elaborate examples can be found in the ``examples`` directory.
+For more specific usage, refer to the documentation.
+
+
