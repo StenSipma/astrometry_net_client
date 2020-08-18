@@ -20,6 +20,19 @@ def is_fits(string):
     return string.endswith(".FITS") or string.endswith(".FIT")
 
 
+def change_filename(filename):
+    """
+    Generate new filename to avoid overwriting an existing file
+    change: path/to/file.fits
+    into  : path/to/file.astrom.fits
+    """
+    path, name = os.path.split(filename)
+    res_filename = name.split(".")
+    res_filename.insert(-1, "astrom")
+    res_filename = ".".join(res_filename)
+    return os.path.join(path, res_filename)
+
+
 def main():
     if len(argv) < 3:
         print("Usage:")
@@ -37,6 +50,9 @@ def main():
 
     # iterate over all the fits files in the specified diretory
     fits_files = filter(is_fits, files)
+
+    # give the iterable of filenames to the function, which returns a
+    # generator, generating pairs containing the finished job and filename.
     result_iter = c.upload_files_gen(fits_files)
 
     for job, filename in result_iter:
@@ -45,19 +61,19 @@ def main():
             log.info("File {} Failed".format(filename))
             continue
 
+        # retrieve the wcs file from the successful job
         wcs = job.wcs_file()
         with fits.open(filename) as hdul:
             # append resulting header (with astrometry) to existing header
             hdul[0].header.extend(wcs)
 
-            # generate new filename to avoid overwriting
-            path, name = os.path.split(filename)
-            res_filename = name.split(".")[-1]
-            res_filename.insert(-1, "astrom")
-            write_filename = os.path.join(path, res_filename)
+            write_filename = change_filename(filename)
 
             log.info("Writing to {}...".format(write_filename))
-            hdul.writeto(write_filename)
+            try:
+                hdul.writeto(write_filename)
+            except Exception:
+                log.error("File {} already exists.".format(write_filename))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 import pytest
-
 from astropy.io.fits import Header
+
+from astrometry_net_client import FileUpload, Session, Submission
 from astrometry_net_client.exceptions import StatusFailedException
-from astrometry_net_client import Session, FileUpload, Submission
 
 
 @pytest.mark.online

@@ -18,10 +18,12 @@ check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install: package
+install: package-install
+
+package-install: package
 	$(PIP) install dist/astrometry_net_client-*.tar.gz
 
-package:
+package: dependencies
 	$(PY) setup.py sdist bdist_wheel
 
 # Dependencies for the development environment, 

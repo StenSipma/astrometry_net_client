@@ -78,7 +78,7 @@ class Client:
             be different from the given ``files_iter``
         """
         workers = min(MAX_WORKERS, workers)
-        executor = ThreadPoolExecutor(workers=workers)
+        executor = ThreadPoolExecutor(max_workers=workers)
         log.info("Spawned executor {}".format(executor))
 
         # submit the files & save which future corresponds to which

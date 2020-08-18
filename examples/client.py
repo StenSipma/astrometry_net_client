@@ -37,10 +37,10 @@ def main():
 
     log.info("Log in done")
 
-    # set view field width in this range (10-20 arcmin)
+    # set view field width in this range (15-30 arcmin)
     # WARNING: this can be very different for your application. Comment
-    #          this out if you are not sure!
-    c.settings.set_scale_range(10, 20)
+    #          or remove if you are not sure!
+    c.settings.set_scale_range(15, 30)
 
     # iterate over all the fits files in the specified diretory
     for filename in filter(is_fits, files):
