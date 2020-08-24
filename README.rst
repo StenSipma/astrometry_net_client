@@ -39,7 +39,8 @@ Or with the higher level ``Client``::
         c = Client(api_key='xxxxxxxxxx')
 
         # WARNING: this can take a while, as it blocks until the file is solved.
-        wcs = c.upload_file(filename)  # will be None if upload is not successful
+        # wcs will be None if upload is not successful
+        wcs = c.calibrate_wcs_file(filename)  
 
 One of the core ideas of this package is to try and make the minimal amount of requests possible and make them at a clear time. This is realized by the following *initialize & send* pattern::
 

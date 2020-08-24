@@ -126,6 +126,12 @@ class Request(object):
 
         This method is mainly for convenience, as to avoid the user unfriendly
         _make_request() method.
+
+        Returns
+        -------
+        response
+            Type depends on the request which is being send. Can be a ``dic``
+            but also a binary file (e.g. when expecting a filts file).
         """
         return self._make_request()
 
@@ -151,14 +157,8 @@ class PostRequest(Request):
     For further usage see the Request class
     """
 
-    def __init__(self, *args, method="post", **kwargs):
-        """
-        Changes the default value for the method parameter. This can still be
-        overridden by the user.
-
-        See Request for complete info on the constructor.
-        """
-        super().__init__(*args, method=method, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, method="method", **kwargs)
 
 
 class AuthorizedRequest(Request):
@@ -168,6 +168,10 @@ class AuthorizedRequest(Request):
 
     The separate login request (if needed) is only send just before the
     original request is made, (e.g. when calling make / _make_request).
+
+    Attributes
+    ----------
+    session: :py:cls:`Session`
     """
 
     def __init__(self, session, *args, **kwargs):
@@ -190,9 +194,17 @@ class AuthorizedRequest(Request):
 
 def file_request(url):
     """
-    Utility function which makes a request to `url` and gets a file in
+    Utility function which makes a request to ``url`` and gets a file in
     response.
-    Returns the binary contents of this file.
+
+    Parameters
+    ----------
+    url: str
+        URL to send the request to.
+
+    Returns
+    -------
+        the binary contents of this file.
     """
     r = Request(url)
     binary_file = r.make()
@@ -201,8 +213,19 @@ def file_request(url):
 
 def fits_file_request(url):
     """
-    Makes a request to url  and read the binary_fits response into
-    an astropy fits file (astropy.io.fits.HDUList)
+    Make request to ``url`` and return a FITS file.
+
+    Makes a request to ``url``  and read the binary_fits response into
+    an astropy fits file (``astropy.io.fits.HDUList``)
+
+    Parameters
+    ----------
+    url: str
+        URL to send the request to.
+
+    Returns
+    -------
+        an astropy fits file (``astropy.io.fits.HDUList``)
     """
     binary_fits = file_request(url)
     hdul = fits.HDUList(file=binary_fits)

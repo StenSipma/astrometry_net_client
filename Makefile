@@ -8,6 +8,7 @@ TEST_ARGS=-v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
+FLAKE_ARGS=--docstring-style=numpy
 
 
 default: check-in-venv format lint install
@@ -53,7 +54,7 @@ check-format:
 	isort --check-only $(ISORT_ARGS) $(PY_FILES)
 
 lint:
-	flake8 $(PY_FILES)
+	flake8 $(FLAKE_ARGS) $(PY_FILES)
 
 # Cleanup
 clean: clean-package clean-docs

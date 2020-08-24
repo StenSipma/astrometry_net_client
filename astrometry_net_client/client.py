@@ -54,18 +54,21 @@ class Client:
 
     def upload_files_gen(self, files_iter, workers=MAX_WORKERS):
         """
-        Generator which uploads a number of files concurrently,
-        yielding the :py:class:`astrometry_net_client.statusables.Job`
-        & filename when done.
+        Generator which uploads a number of files concurrently, yielding the
+        :py:class:`astrometry_net_client.statusables.Job` & filename when done.
+
+        Note that the ``files_iter`` argument is fully consumed when submitting
+        to the executor is done. This means that the results will only be
+        yielded once the iterator is consumed.
 
         Parameters
         ----------
         files_iter: iterable
-            Some iterable containing paths to the files which will be
-            uploaded.
+            Some iterable containing paths to the files which will be uploaded.
+            Is fully consumed before any result is yielded.
         workers: int, optional
-            A positive integer, controlling the amount of workers to
-            use for the processing. Will not exceed the value of
+            A positive integer, controlling the amount of workers to use for
+            the processing. Will not exceed the value of
             :py:const:`MAX_WORKERS`.
 
         Yields
@@ -74,19 +77,19 @@ class Client:
             A tuple containing the finished
             :py:class:`astrometry_net_client.statusables.Job` and the
             corresponding filename. Yields when the Job is finished.
-            NOTE: Order of yielded filenames can (and likely will)
-            be different from the given ``files_iter``
+            NOTE: Order of yielded filenames can (and likely will) be different
+            from the given ``files_iter``
         """
         workers = min(MAX_WORKERS, workers)
-        executor = ThreadPoolExecutor(max_workers=workers)
-        log.info("Spawned executor {}".format(executor))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            log.info("Spawned executor {}".format(executor))
 
-        # submit the files & save which future corresponds to which
-        #  filename
-        future_to_file = {
-            executor.submit(self.upload_file, filename): filename
-            for filename in files_iter
-        }
+            # submit the files & save which future corresponds to which
+            #  filename
+            future_to_file = {
+                executor.submit(self.upload_file, filename): filename
+                for filename in files_iter
+            }
 
         # iterate over the results once they are completed.
         for future in as_completed(future_to_file):
@@ -114,11 +117,11 @@ class Client:
 
         Returns
         -------
-            :py:class:`astrometry_net_client.statusables.Job`: The job of
-            the resulting upload. NOTE: It is possible that the job did not
+            :py:class:`astrometry_net_client.statusables.Job`: The job of the
+            resulting upload. NOTE: It is possible that the job did not
             succeed, therefore check with
-            :py:class:`astrometry_net_client.statusables.Job.success`
-            if it did.
+            :py:class:`astrometry_net_client.statusables.Job.success` if it
+            did.
         """
         upl_settings = self.settings
         if settings is not None:

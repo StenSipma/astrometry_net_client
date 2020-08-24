@@ -23,6 +23,10 @@ def cache_response(func):
     """
     Wrapper around a function to cache its result in an attribute of the
     object. Name of the attribute is: _<funcname>_result
+
+    Returns
+    -------
+    wrapped function
     """
     func_name = func.__name__
     result_attr = "_{}_result".format(func_name)
@@ -45,13 +49,17 @@ def ensure_status_success(func):
     Decorator for a method to enforce it only being called when the
     statusable is successful (and therefore also finished).
 
+    Returns
+    -------
+    wrapped function
+
     Raises
     ------
-        StatusFailedException:
-            when the :py:meth:`success` evaluates to ``False`` but
-            :py:meth:`done` to ``True``.
-        StillProcessingException:
-            when :py:meth:`done` is ``False``
+    StatusFailedException:
+        when the :py:meth:`success` evaluates to ``False`` but
+        :py:meth:`done` to ``True``.
+    StillProcessingException:
+        when :py:meth:`done` is ``False``
     """
 
     @wraps(func)
@@ -71,6 +79,12 @@ def ensure_status(func):
     """
     Decorator for a method to enforce it only being called when the
     statusable is finished.
+
+    Returns
+    -------
+    wrapped function
+
+    
     """
 
     @wraps(func)

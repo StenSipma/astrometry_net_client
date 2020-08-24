@@ -32,7 +32,7 @@ class Session(object):
                 )
         self.logged_in = False
 
-    def login(self, force=False):
+    def login(self, force: bool = False):
         """
         Method used to log-in or start a session with the Astrometry.net API.
 
@@ -43,8 +43,15 @@ class Session(object):
         After a successful login, the session key is stored in the `key`
         attribute and `logged_in` is set to `True`.
 
-        Raises LoginFailedException if the login response does not have the
-        status 'success'.
+        Parameters
+        ----------
+        force: bool
+            Forces the login by ignoring the :py:attr:`logged_in` boolean.
+
+        Raises
+        ------
+        LoginFailedException
+            if the login response does not have the status 'success'.
         """
         if not force and self.logged_in:
             return
