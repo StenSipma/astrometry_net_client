@@ -2,7 +2,11 @@
 Astrometry.net Client
 *********************
 
-*Note: The package is currently in development, so use at your own risk!*
+.. image:: https://readthedocs.org/projects/astrometry-net-client/badge/?version=latest
+   :target: https://astrometry-net-client.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+*Note: The package is usable but still in development. This means there can be some unexpected behaviour.*
 
 Introduction
 ------------
@@ -70,6 +74,10 @@ Build & install the package with::
 
 Documentation
 -------------
+Documentation is available at `Readthedocs`_
+
+.. _Readthedocs: https://astrometry-net-client.readthedocs.io/en/latest/
+
 There is a local documentation available (defined by docstrings). To access it, first  install the package and the development dependencies::
 
         make dependencies
@@ -84,7 +92,10 @@ The main page can then be found at (assuming you are in the project root) ``./do
 
 Examples
 --------
-Some elaborate examples can be found in the ``examples`` directory.
-For more specific usage, refer to the documentation.
+Some example files/scripts are found at the `examples entry`_ of the documentation.
 
+Some elaborate examples can be found in the ``examples`` directory. 
+For more specific usage, refer to the `documentation`_.
 
+.. _examples entry: https://astrometry-net-client.readthedocs.io/en/latest/examples/overview.html
+.. _documentation: https://astrometry-net-client.readthedocs.io/en/latest

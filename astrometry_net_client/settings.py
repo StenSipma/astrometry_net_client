@@ -163,14 +163,6 @@ class Settings(UserDict):
 
         Incompatible with :py:func:`set_scale_estimate`
 
-        Example
-        -------
-        >>> settings = Settings()
-        >>> settings.set_scale_range(5, 25)
-        >>> settings
-        {'scale_lower': 5, 'scale_upper': 25, 'scale_units': 'arcminwidth',
-                'scale_type': 'ul'}
-
         Parameters
         ----------
         lower: float
@@ -180,7 +172,15 @@ class Settings(UserDict):
         unit: str
             Optional argument which determines the unit of the ``upper`` /
             ``lower`` values. Defaults to ``'arcminwidth'``. Can be one of:
-            ``'arcminwidth'``,``'arcsecperpix'`` or ``'degwidth'``.
+            ``'arcminwidth'``, ``'arcsecperpix'`` or ``'degwidth'``.
+
+        Examples
+        --------
+        >>> settings = Settings()
+        >>> settings.set_scale_range(5, 25)
+        >>> settings
+        {'scale_lower': 5, 'scale_upper': 25, 'scale_units': 'arcminwidth',
+                'scale_type': 'ul'}
         """
         # Make a tmp Settings object to verify correctness of arguments
         tmp = Settings()
@@ -201,14 +201,6 @@ class Settings(UserDict):
 
         Incompatible with :py:func:`set_scale_range`
 
-        Example
-        -------
-        >>> settings = Settings()
-        >>> settings.set_scale_estimate(15, 5)
-        >>> settings
-        {'scale_est': 15, 'scale_err': 5, 'scale_units': 'arcminwidth',
-                'scale_type': 'ev'}
-
         Parameters
         ----------
         estimate: float
@@ -218,7 +210,16 @@ class Settings(UserDict):
         unit: str
             Optional argument which determines the unit of the ``upper`` /
             ``lower`` values. Defaults to ``'arcminwidth'``. Can be one of:
-            ``'arcminwidth'``,``'arcsecperpix'`` or ``'degwidth'``.
+            ``'arcminwidth'``, ``'arcsecperpix'`` or ``'degwidth'``.
+
+        Examples
+        --------
+        >>> settings = Settings()
+        >>> settings.set_scale_estimate(15, 5)
+        >>> settings
+        {'scale_est': 15, 'scale_err': 5, 'scale_units': 'arcminwidth',
+                'scale_type': 'ev'}
+
         """
         # TODO refactor into a decorator, or make some verify function
 

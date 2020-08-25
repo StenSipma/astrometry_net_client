@@ -6,10 +6,10 @@ Detailed Module Overview
    :caption: Modules:
 
    client
+   settings
+   statusables
+   uploads
+   session
    exceptions
    request
-   session
-   statusables
    config
-   settings
-   uploads
