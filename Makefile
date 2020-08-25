@@ -27,6 +27,10 @@ package-install: package
 package: dependencies
 	$(PY) setup.py sdist bdist_wheel
 
+# Uploading
+upload-test: package
+	python3 -m twine upload --repository testpypi dist/*
+
 # Dependencies for the development environment, 
 # e.g. contains Sphinx, flake8, black, isort etc.
 dependencies:

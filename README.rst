@@ -63,14 +63,26 @@ Similarely, retrieving files like the WCS file (after a successful ``Job``) will
 
 Installation
 ------------
-Installing the package is made easy by the Makefile, once you have a local copy of the repository (e.g. by cloning, or downloading & extracting the repo ZIP).
+
+For the moment, there is a test version available at test.pypi, which can be installed by::
+
+        pip install astropy requests
+        pip install -i https://test.pypi.org/simple/ astrometry-net-client==0.1 --no-deps
+
+It is important to pip install the dependencies separately, as these are not guarenteed to exist on test.pypi! Also, the latest version in the repository may not be equal to the version on test.pypi, even if the version numbers are the same.
+
+Installing From Source
+""""""""""""""""""""""
+
+Installing the package from source is made easy by the Makefile, once you have a local copy of the repository (e.g. by cloning, or downloading & extracting the repo ZIP).
 
 It is heavily recommended to use a virtual environment. Create and activate one by running::
 
         make virt-env
         source .env/bin/activate
+        pip install wheel
 
-Build & install the package with::
+Then build & install the package with::
 
         make install
 
