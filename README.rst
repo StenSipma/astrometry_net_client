@@ -6,7 +6,9 @@ Astrometry.net Client
    :target: https://astrometry-net-client.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-*Note: The package is usable but still in development. This means there can be some unexpected behaviour.*
+.. note:: 
+   The package is still in development, but it can already be used. 
+   Do not hesitate to leave any feedback (positive or negative)!
 
 Introduction
 ------------
