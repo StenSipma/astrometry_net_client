@@ -24,6 +24,11 @@ def cache_response(func):
     Wrapper around a function to cache its result in an attribute of the
     object. Name of the attribute is: _<funcname>_result
 
+    Parameters
+    ----------
+    func
+        function to be wrapped
+
     Returns
     -------
     wrapped function
@@ -49,16 +54,21 @@ def ensure_status_success(func):
     Decorator for a method to enforce it only being called when the
     statusable is successful (and therefore also finished).
 
+    Parameters
+    ----------
+    func
+        function to be wrapped
+
     Returns
     -------
     wrapped function
 
     Raises
     ------
-    StatusFailedException:
+    StatusFailedException
         when the :py:meth:`success` evaluates to ``False`` but
         :py:meth:`done` to ``True``.
-    StillProcessingException:
+    StillProcessingException
         when :py:meth:`done` is ``False``
     """
 
@@ -80,11 +90,19 @@ def ensure_status(func):
     Decorator for a method to enforce it only being called when the
     statusable is finished.
 
+    Parameters
+    ----------
+    func
+        function to be wrapped
+
     Returns
     -------
     wrapped function
 
-    
+    Raises
+    ------
+    StillProcessingException
+        when :py:meth:`done` is ``False``
     """
 
     @wraps(func)
@@ -125,6 +143,11 @@ class Statusable(abc.ABC):
         force: bool
             Can be set to true to make a status request regardless of the
             result of :py:meth:`done`.
+
+        Returns
+        -------
+            dict: Dictionary with the status response (content). Same as
+                attribute :py:attr:`stat_response`.
         """
         if force or not self.done():
             log_msg = "Statusable {} not done, querying status..."
@@ -146,22 +169,6 @@ class Statusable(abc.ABC):
         It is possible to specify a timeout, in seconds, after which a
         :py:exc:`TimeoutError` is raised.
 
-        Examples
-        --------
-        Will wait forever and doubles the sleep time until it reaches 300.
-        >>> stat.until_done()
-
-        Will wait forever, and doubles the sleep time until it is equal to 60s
-        >>> stat.until_done(end=60)
-
-        Will wait forever and doubles the sleep time indefinitely
-        >>> stat.until_done(end=None)
-
-        Waits until 120s have passed (default sleep behaviour)
-        >>> stat.until_done(timeout=120s)
-        TimeoutError
-
-
         Parameters
         ----------
         start: int
@@ -176,9 +183,35 @@ class Statusable(abc.ABC):
 
         Returns
         -------
-            dict: Dictionary with the status response (content)
+        dict:
+            Dictionary with the status response (content). Same as attribute
+            :py:attr:`stat_response`.
+
+        Raises
+        ------
+        TimeoutError
+            When parameter `timeout` is set and the waited time exceeds this
+            value.
+
+        Examples
+        --------
+        Will wait forever and doubles the sleep time until it reaches 300.
+
+        >>> stat.until_done()
+
+        Will wait forever, and doubles the sleep time until it is equal to 60s
+
+        >>> stat.until_done(end=60)
+
+        Will wait forever and doubles the sleep time indefinitely
+
+        >>> stat.until_done(end=None)
+
+        Waits until 120s have passed (default sleep behaviour)
+
+        >>> stat.until_done(timeout=120s)
+        TimeoutError
         """
-        # TODO perhaps a default end of 300 is better ?
         now = time.time  # alias the function for readablility
         start_time = now()
 
@@ -231,14 +264,39 @@ class Statusable(abc.ABC):
 
 class Submission(Statusable):
     """
-    Represents a single submission from Astrometry.net.
-    A submission is the result of any of the "upload or upload_url"
-    A submission contains a list with jobs
-    If the job_calibrations list is nonempty, the image is solved.
+    Represents a single submission from Astrometry.net.  A submission is the
+    result of any of the :py:class:`astrometry_net_client.UploadFile` or
+    :py:class:`astrometry_net_client.UploadURL` uploaders.
+
+    Note that some of the attributes listed below are only available when
+    :py:func:`status` is queried.
+
+    Attributes
+    ----------
+    id: int
+        Identifier for the submission. Used in the request URL.
+    user: int
+        Identifier for the user which made the Submission.
+    images: list(int)
+        List of references to the uploaded images.
+    job_calibrations: list(int)
+        Identifier to the references used to solve the images.
+    jobs: list(Jobs)
+        The list of jobs which the Submission spawned. Will typically be one
+        Job per uploaded image. When no job was spawned yet, the list will
+        be: ``[None]``.
+    processing_started: str
+        If available, a string containing the date when the Submission process
+        started.
+    processing_finished: str
+        If available, a string containing the date when the Submission process
+        finished.
+
+    See Also
+    --------
+    Statusable : For available function on getting the status & waiting
     """
 
-    # TODO: when are there multiple jobs?
-    #       answer(?) only when manually uploading
     url = BASE_URL + "/submissions/{submission.id}"
 
     def __init__(self, submission_id):
@@ -251,6 +309,10 @@ class Submission(Statusable):
         Allowes to easily iterate over the jobs of a submission by doing:
         >>> for job in submission:
         ...    process_job()
+
+        Returns
+        -------
+        Iterator over the :py:attr:`jobs`.
         """
         return iter(self.jobs)
 
@@ -275,6 +337,10 @@ class Submission(Statusable):
         """
         We define 'final' here as processing has finished and the jobs have
         started, assuming there is always at least one job.
+
+        Returns
+        -------
+        bool
         """
         try:
             proc_finished = self.processing_finished is not None
@@ -305,6 +371,35 @@ class Job(Statusable):
     Represents a single job from Astrometry.net.
     It can either still be running, or be finished.
     When finished, results can be queried using the appropriate methods.
+
+    Attributes
+    ----------
+    id: int
+        Identifier for the Astrometry.net Job.
+    resp_status: str
+        The status of the Job (as it was last queried). Can be: ``"success"``,
+        ``"failure"`` or ``"solving"``.
+    objects_in_field : list(str)
+        Detected objects in the field. Result of the :py:meth:`info` query.
+    machine_tags : list(str)
+        Tags made by the API (machine). Result of the :py:meth:`info` query.
+    tags : list(str)
+        All tags of the Job. Can be made by users or by the API. Result of
+        the :py:meth:`info` query.
+    original_filename : str
+        Filename of the uploaded file. Will not include the path. Result of
+        the :py:meth:`info` query.
+    calibration : dict
+        Dictionary containing information about the solved image, example:
+
+        >>> job.calibration
+        {"parity": 1.0, "orientation": 105.74942079091929,
+                "pixscale": 1.0906710701159739, "radius": 0.8106715896625917,
+                "ra": 169.96633791366915, "dec": 13.221011585315143}
+
+    See Also
+    --------
+    Statusable : For available function on getting the status & waiting
     """
 
     url = BASE_URL + "/jobs/{job.id}"
@@ -357,8 +452,8 @@ class Job(Statusable):
         self.tags = response["tags"]
         self.original_filename = response["original_filename"]
         # TODO make a calibration class ?
-        # Only exists if status is success (?)
-        # self.calibration = response['calibration']
+        if self.success():
+            self.calibration = response["calibration"]
 
         return response
 
@@ -367,6 +462,10 @@ class Job(Statusable):
     def wcs_file(self):
         """
         Get the resulting wcs file as an astropy.io.fits.Header.
+
+        Returns
+        -------
+        astropy.io.fits.Header
         """
         r = Request(self.wcs_file_url.format(job=self))
         binary_wcs = r.make()
@@ -376,6 +475,13 @@ class Job(Statusable):
     @ensure_status_success
     @cache_response
     def new_fits_file(self):
+        """
+        Get the new fits file (original file + new header).
+
+        Returns
+        -------
+        astropy.io.fits.HDUList
+        """
         return fits_file_request(self.fits_file_url.format(job=self))
 
     @ensure_status_success
@@ -398,6 +504,10 @@ class Job(Statusable):
     def annotated_display(self):
         """
         JPEG image as a binary string
+
+        Returns
+        -------
+        bytes
         """
         return file_request(self.annotated_display_url.format(job=self))
 
@@ -406,6 +516,10 @@ class Job(Statusable):
     def red_green_image_display(self):
         """
         PNG image as a binary string
+
+        Returns
+        -------
+        bytes
         """
         return file_request(self.red_green_image_display_url.format(job=self))
 
@@ -414,6 +528,10 @@ class Job(Statusable):
     def extraction_image_display(self):
         """
         PNG image as a binary string
+
+        Returns
+        -------
+        bytes
         """
         return file_request(self.extraction_image_display_url.format(job=self))
 

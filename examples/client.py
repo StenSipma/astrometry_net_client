@@ -15,6 +15,15 @@ def is_fits(string):
     """
     Boolean function to test if the extension of the filename provided
     is either .fits or .fit (upper- or lowercase).
+
+    Parameters
+    ----------
+    string: str
+        (path to) filename to test
+
+    Returns
+    -------
+    bool
     """
     string = string.upper()
     return string.endswith(".FITS") or string.endswith(".FIT")

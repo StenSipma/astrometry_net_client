@@ -171,7 +171,7 @@ class AuthorizedRequest(Request):
 
     Attributes
     ----------
-    session: :py:cls:`Session`
+    session: :py:class:`Session`
     """
 
     def __init__(self, session, *args, **kwargs):

@@ -15,6 +15,15 @@ def is_fits(string):
     """
     Boolean function to test if the extension of the filename provided
     is either .fits or .fit (upper- or lowercase).
+
+    Parameters
+    ----------
+    string: str
+        (path to) filename to test
+
+    Returns
+    -------
+    bool
     """
     string = string.upper()
     return string.endswith(".FITS") or string.endswith(".FIT")
@@ -23,8 +32,18 @@ def is_fits(string):
 def change_filename(filename):
     """
     Generate new filename to avoid overwriting an existing file
-    change: path/to/file.fits
-    into  : path/to/file.astrom.fits
+    change: ``path/to/file.fits``
+    into  : ``path/to/file.astrom.fits``
+
+    Parameters
+    ----------
+    filename: str
+        The full path to the file which is to be changed
+
+    Returns
+    -------
+    str
+        The new path to the given filename
     """
     path, name = os.path.split(filename)
     res_filename = name.split(".")

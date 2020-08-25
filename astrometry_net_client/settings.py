@@ -87,7 +87,7 @@ class Settings(UserDict):
     """
     Enhanced dictionary which stores the parameters which can be given
     alongside a request (mainly upload requests like
-    :py:class:astrometry_net_client.upload.UploadFile)
+    :py:class:`astrometry_net_client.upload.UploadFile`)
 
     The settings can either be accessed (retrieved or set) using the normal
     dictionary notation, or the dot notation (see example). If an invalid
@@ -180,7 +180,7 @@ class Settings(UserDict):
         unit: str
             Optional argument which determines the unit of the ``upper`` /
             ``lower`` values. Defaults to ``'arcminwidth'``. Can be one of:
-            ``'arcminwidth'``,``arcsecperpix`` or ``'degwidth'``.
+            ``'arcminwidth'``,``'arcsecperpix'`` or ``'degwidth'``.
         """
         # Make a tmp Settings object to verify correctness of arguments
         tmp = Settings()
@@ -218,7 +218,7 @@ class Settings(UserDict):
         unit: str
             Optional argument which determines the unit of the ``upper`` /
             ``lower`` values. Defaults to ``'arcminwidth'``. Can be one of:
-            ``'arcminwidth'``,``arcsecperpix`` or ``'degwidth'``.
+            ``'arcminwidth'``,``'arcsecperpix'`` or ``'degwidth'``.
         """
         # TODO refactor into a decorator, or make some verify function
 
