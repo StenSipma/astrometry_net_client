@@ -6,6 +6,9 @@ Astrometry.net Client
    :target: https://astrometry-net-client.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
+.. image:: https://travis-ci.org/StenSipma/astrometry_net_client.svg?branch=master
+   :target: https://travis-ci.org/StenSipma/astrometry_net_client
+
 .. note:: 
    The package is still in development, but it can already be used. 
    Do not hesitate to leave any feedback (positive or negative)!
