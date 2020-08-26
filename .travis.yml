@@ -4,6 +4,6 @@ python:
 install:
   make install
 script:
-  make lint
-  make check-format
-  make test
+  - make lint
+  - make check-format
+  - make test
