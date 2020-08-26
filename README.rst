@@ -67,6 +67,8 @@ Similarely, retrieving files like the WCS file (after a successful ``Job``) will
 Installation
 ------------
 
+Installation required python version 3.7 or greater.
+
 For the moment, there is a test version available at test.pypi, which can be installed by::
 
         pip install astropy requests
