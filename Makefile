@@ -2,9 +2,10 @@ PY=python3
 PIP=pip
 TEST=pytest
 
-PY_FILES=astrometry_net_client/*.py tests/*.py setup.py examples/*.py
+PROJECT_NAME=astrometry_net_client
+PY_FILES=$(PROJECT_NAME)/*.py tests/*.py setup.py examples/*.py
 
-TEST_ARGS=-v
+TEST_ARGS=--cov --cov=$(PROJECT_NAME) --cov-report html -v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
@@ -19,12 +20,12 @@ check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install: package-install
+install: dependencies package package-install
 
-package-install: package
-	$(PIP) install dist/astrometry_net_client-*.tar.gz
+package-install: 
+	$(PIP) install dist/$(PROJECT_NAME)-*.tar.gz
 
-package: dependencies
+package: 
 	$(PY) setup.py sdist bdist_wheel
 
 # Uploading
@@ -34,13 +35,14 @@ upload-test: package
 # Dependencies for the development environment, 
 # e.g. contains Sphinx, flake8, black, isort etc.
 dependencies:
-	$(PIP) install -r requirements.txt
+	$(PIP) install --upgrade pip setuptools wheel
+	$(PIP) install --upgrade -r requirements.txt
 
 # Generate the documentation
 documentation:
 	make --directory=docs/ html
 
-# Testing. The default test does not include the online tests 
+## Testing. The default test does not include the online tests 
 test:
 	$(TEST) $(TEST_ARGS) -m 'not online or not long' tests/
 
@@ -48,7 +50,7 @@ test:
 test-all:
 	$(TEST) $(TEST_ARGS) -m 'not long' tests/
 
-# Formatting and linting
+## Formatting and linting
 format:
 	black $(BLACK_ARGS) $(PY_FILES)
 	isort $(ISORT_ARGS) $(PY_FILES)
@@ -60,16 +62,20 @@ check-format:
 lint:
 	flake8 $(FLAKE_ARGS) $(PY_FILES)
 
-# Cleanup
-clean: clean-package clean-docs
+## Cleanup
+clean: clean-package clean-docs clean-reports
 
 clean-package:
-	-rm -r astrometry_net_client.egg-info 
+	-rm -r *.egg-info 
 	-rm -r build 
 	-rm -r dist
 
 clean-docs:
 	make --directory=docs clean
+
+clean-reports:
+	-rm -r htmlcov
+	-rm .coverage
 
 virt-env:
 	python3 -m venv .env

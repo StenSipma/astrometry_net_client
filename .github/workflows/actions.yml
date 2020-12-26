@@ -1,0 +1,42 @@
+name: Astronomy.Net Client Actions
+on: [push]
+jobs:
+  all:
+    runs-on: ubuntu-latest
+    steps:
+      # All steps for setting up
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with: 
+          python-version: '3.7'
+          # Default architecture: x64 
+    
+      - name: Setup caching for pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Installing development dependencies
+        run: make dependencies
+
+      # Make sure everything conforms to the formatters & linters
+      - name: Check Linting
+        run: make lint
+      - name: Check formatting
+        run: make check-format
+
+      # Build and install the package for later testing
+      - name: Do packaging
+        run: make package
+      - name: Install package
+        run: make package-install
+
+      # Actually run the tests for the package
+      - name: Test the package
+      - run: make test
