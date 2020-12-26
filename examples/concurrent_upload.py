@@ -4,11 +4,36 @@ import os
 from sys import argv
 
 from astropy.io import fits
+from astropy.stats import sigma_clipped_stats
+from photutils import DAOStarFinder
 
 from astrometry_net_client import Client
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
+
+
+def find_sources(filename, detect_threshold=20, fwhm=3):
+    with fits.open(filename) as f:
+        data = f[0].data
+    # find sources
+    mean, median, std = sigma_clipped_stats(data, sigma=3.0, maxiters=5)
+    daofind = DAOStarFinder(fwhm=fwhm, threshold=detect_threshold * std)
+    sources = daofind(data - median)
+    return sources
+
+
+def enough_sources(filename, min_sources=5):
+    sources = find_sources(filename)
+    # terminate if not enough are found.
+    # sources is None when no sources are found
+    num_sources = len(sources) if sources is not None else 0
+    if sources is None or num_sources <= min_sources:
+        msg = "Not enough sources found: {} found, {} wanted."
+        log.info(msg.format(num_sources, min_sources))
+        return False
+    log.info("Found {} sources".format(num_sources))
+    return True
 
 
 def is_fits(string):
@@ -72,7 +97,9 @@ def main():
 
     # give the iterable of filenames to the function, which returns a
     # generator, generating pairs containing the finished job and filename.
-    result_iter = c.upload_files_gen(fits_files)
+    result_iter = c.upload_files_gen(
+        fits_files, filter_func=enough_sources, filter_args=(10,)
+    )
 
     for job, filename in result_iter:
 

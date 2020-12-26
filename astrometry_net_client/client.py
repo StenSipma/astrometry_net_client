@@ -161,7 +161,8 @@ class Client:
             # allow arguments to be unpackable if it is not specified
             filter_args = []
 
-        if filter_func is not None and filter_func(filename, *filter_args):
+        if filter_func is not None and not filter_func(filename, *filter_args):
+            log.info("Filter function failed, skipping upload")
             return None
 
         return self.upload_file(filename, *args, **kwargs)

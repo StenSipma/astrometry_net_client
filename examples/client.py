@@ -29,6 +29,29 @@ def is_fits(string):
     return string.endswith(".FITS") or string.endswith(".FIT")
 
 
+def change_filename(filename):
+    """
+    Generate new filename to avoid overwriting an existing file
+    change: ``path/to/file.fits``
+    into  : ``path/to/file.astrom.fits``
+
+    Parameters
+    ----------
+    filename: str
+        The full path to the file which is to be changed
+
+    Returns
+    -------
+    str
+        The new path to the given filename
+    """
+    path, name = os.path.split(filename)
+    res_filename = name.split(".")
+    res_filename.insert(-1, "astrom")
+    res_filename = ".".join(res_filename)
+    return os.path.join(path, res_filename)
+
+
 def main():
     if len(argv) < 3:
         print("Usage:")
@@ -69,10 +92,7 @@ def main():
                 hdul[0].header.extend(wcs)
 
                 # generate new filename to avoid overwriting
-                path, name = os.path.split(filename)
-                res_filename = name.split(".")[-1]
-                res_filename.insert(-1, "astrom")
-                write_filename = os.path.join(path, res_filename)
+                write_filename = change_filename(filename)
 
                 log.info("Writing to {}...".format(write_filename))
                 hdul.writeto(write_filename)
