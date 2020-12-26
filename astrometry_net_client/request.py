@@ -158,7 +158,7 @@ class PostRequest(Request):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, method="method", **kwargs)
+        super().__init__(*args, method="post", **kwargs)
 
 
 class AuthorizedRequest(Request):

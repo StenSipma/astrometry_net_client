@@ -8,6 +8,7 @@ from astrometry_net_client.uploads import FileUpload
 
 log = logging.getLogger(__name__)
 
+# TODO: document this value.
 MAX_WORKERS = 10
 
 
@@ -27,6 +28,12 @@ class Client:
         If not specified, the settings object will be created from given
         keyword arguments which correspond to valid settings. For this see
         :py:class:`astrometry_net_client.settings.Settings`.
+    kwargs: arguments
+        Used to create a session or settings object, if either is not
+        specified. Will extract the relevant arguments relevant to the object
+        which is created before passing them to the object constructor.
+        See :py:class:`astrometry_net_client.settings.Settings` and
+        :py:class:`astrometry_net_client.session.Session`
     """
 
     def __init__(self, session=None, settings=None, **kwargs):
@@ -52,7 +59,13 @@ class Client:
         log.info("Logging in")
         self.session.login()
 
-    def upload_files_gen(self, files_iter, workers=MAX_WORKERS):
+    def upload_files_gen(
+        self,
+        files_iter,
+        filter_func=None,
+        filter_args=None,
+        workers=MAX_WORKERS,
+    ):
         """
         Generator which uploads a number of files concurrently, yielding the
         :py:class:`astrometry_net_client.statusables.Job` & filename when done.
@@ -70,6 +83,11 @@ class Client:
             A positive integer, controlling the amount of workers to use for
             the processing. Will not exceed the value of
             :py:const:`MAX_WORKERS`.
+        filter_func: Callable
+            Predicate filter function which takes in the `filename` and
+            optionally some argument (`filter_args`).
+        filter_args: List
+            Arguments which are to be passed to the filter function.
 
         Yields
         ------
@@ -87,7 +105,12 @@ class Client:
             # submit the files & save which future corresponds to which
             #  filename
             future_to_file = {
-                executor.submit(self.upload_file, filename): filename
+                executor.submit(
+                    self.filtered_upload_wrapper,
+                    filename,
+                    filter_func=filter_func,
+                    filter_args=filter_args,
+                ): filename
                 for filename in files_iter
             }
 
@@ -97,10 +120,52 @@ class Client:
             try:
                 res_job = future.result()
             except Exception as e:
+                # This exception is thrown inside the computed function.
                 err_msg = "File {} stopped with exception {}"
                 log.error(err_msg.format(result_filename, e))
             else:
-                yield res_job, result_filename
+                if res_job is not None:  # ignore if file was filtered out
+                    yield res_job, result_filename
+
+    def filtered_upload_wrapper(
+        self, filename, filter_func=None, filter_args=None, *args, **kwargs
+    ):
+        """
+        Wrapper around :py:func:`upload_file` which filters the given file
+        based on a specified filter function.  Main use for this is a
+        computationally heavy filter function, like counting number of sources
+        locally, and only uploading if not enough are detected.
+
+        Parameters
+        ----------
+        filename: str
+            File to be uploaded. See :py:func:`upload_file`.
+        filter_func: Callable
+            Predicate filter function which takes in the `filename` and
+            optionally some argument (`filter_args`).
+        filter_args: List
+            Arguments which are to be passed to the filter function.
+        args: other arguments
+            Directly passed to :py:func:`upload_file`
+        kwargs: keyword arguments
+            Directly passed to :py:func:`upload_file`
+
+        Returns
+        -------
+        Job or None: :py:class:`astrometry_net_client.statusables.Job`, `None`
+            Will be the job of the resulting upload (see
+            :py:func:`upload_file`), or `None` when `filter_func` evaluated to
+            `False`.
+        """
+        if filter_args is None:
+            # allow arguments to be unpackable if it is not specified
+            filter_args = []
+
+        if filter_func is not None and not filter_func(filename, *filter_args):
+            log.info("Filter function failed, skipping upload")
+            return None
+
+        return self.upload_file(filename, *args, **kwargs)
 
     def upload_file(self, filename, settings=None):
         """
@@ -117,9 +182,9 @@ class Client:
 
         Returns
         -------
-            :py:class:`astrometry_net_client.statusables.Job`: The job of the
-            resulting upload. NOTE: It is possible that the job did not
-            succeed, therefore check with
+        Resulting Job: :py:class:`astrometry_net_client.statusables.Job`
+            The job of the resulting upload. NOTE: It is possible that the job
+            did not succeed, therefore check with
             :py:class:`astrometry_net_client.statusables.Job.success` if it
             did.
         """
