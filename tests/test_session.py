@@ -1,14 +1,15 @@
 import os
-import requests
 from unittest import mock
 
 import pytest
+import requests
 from constants import VALID_KEY
 
 from astrometry_net_client import Session
 from astrometry_net_client.exceptions import APIKeyError, LoginFailedException
 
 some_key = "somekey"
+
 
 # Some general definitions
 class FunctionCalledException(Exception):
