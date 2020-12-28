@@ -5,6 +5,8 @@ TEST=pytest
 PROJECT_NAME=astrometry_net_client
 PY_FILES=$(PROJECT_NAME)/*.py tests/*.py setup.py examples/*.py
 
+# Add the following options for a testresults JUnit like xml report
+#-o junit_family=xunit2 --junitxml="testresults.xml"
 TEST_ARGS=--cov --cov=$(PROJECT_NAME) --cov-report html -v
 
 BLACK_ARGS=-l 79
@@ -12,15 +14,16 @@ ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses
 FLAKE_ARGS=--docstring-style=numpy
 
 
-default: check-in-venv format lint install
+default: check-in-venv format lint install ## perform formatting and install
 
-all: default dependencies test documentation
+all: default dependencies test documentation ## perform all checks, including formatting and testing
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install: dependencies package package-install
+install: dependencies package package-install  ## package and install, with installing dependencies
+quick-install: package package-install  ## Repackage and install without reinstalling dependencies
 
 package-install: 
 	$(PIP) install dist/$(PROJECT_NAME)-*.tar.gz
@@ -42,16 +45,23 @@ dependencies:
 documentation:
 	make --directory=docs/ html
 
-## Testing. The default test does not include the online tests 
-test:
+
+test: ## Run the default tests (not online & not long)
 	$(TEST) $(TEST_ARGS) -m 'not online or not long' tests/
 
-# Includes all tests, so also those that query the actual api.
-test-all:
+
+test-online: ## test, also include the tests which query the online api.
 	$(TEST) $(TEST_ARGS) -m 'not long' tests/
 
+
+test-all: ## test-online, also include the long tests (i.e. uploading files)
+	$(TEST) $(TEST_ARGS)  tests/
+
+help: ## Prints help for targets with comments
+	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
 ## Formatting and linting
-format:
+format: ## Format all the files using black and isort
 	black $(BLACK_ARGS) $(PY_FILES)
 	isort $(ISORT_ARGS) $(PY_FILES)
 
@@ -59,11 +69,11 @@ check-format:
 	black --check $(BLACK_ARGS) $(PY_FILES)
 	isort --check-only $(ISORT_ARGS) $(PY_FILES)
 
-lint:
+lint: ## Check the linting of all files
 	flake8 $(FLAKE_ARGS) $(PY_FILES)
 
-## Cleanup
-clean: clean-package clean-docs clean-reports
+
+clean: clean-package clean-docs clean-reports  ## Cleanup
 
 clean-package:
 	-rm -r *.egg-info 
@@ -76,6 +86,7 @@ clean-docs:
 clean-reports:
 	-rm -r htmlcov
 	-rm .coverage
+	-rm testresults.xml
 
 virt-env:
 	python3 -m venv .env

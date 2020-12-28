@@ -1,7 +1,11 @@
 import os
 
 from astrometry_net_client.config import login_url, read_api_key
-from astrometry_net_client.exceptions import APIKeyError, LoginFailedException
+from astrometry_net_client.exceptions import (
+    APIKeyError,
+    InvalidRequest,
+    LoginFailedException,
+)
 from astrometry_net_client.request import PostRequest
 
 
@@ -20,9 +24,8 @@ class Session(object):
         elif key_location is not None:
             self.api_key = read_api_key(key_location)
         else:
-            try:
-                self.api_key = os.environ.get("ASTROMETRY_API_KEY")
-            except KeyError:
+            self.api_key = os.environ.get("ASTROMETRY_API_KEY")
+            if self.api_key is None:
                 raise APIKeyError(
                     "No api key found or given. "
                     "Specify an API key using one of: "
@@ -57,10 +60,10 @@ class Session(object):
             return
 
         r = PostRequest(self.url, data={"apikey": self.api_key})
-        response = r.make()
-
-        if response.get("status") != "success":
-            raise LoginFailedException(str(response))
+        try:
+            response = r.make()
+        except InvalidRequest:
+            raise LoginFailedException("The api key given is not valid")
 
         self.key = response["session"]
         self.logged_in = True
