@@ -47,7 +47,7 @@ documentation:
 
 
 test: ## Run the default tests (not online & not long)
-	$(TEST) $(TEST_ARGS) -m 'not online or not long' tests/
+	$(TEST) $(TEST_ARGS) -m 'not online and not long' tests/
 
 
 test-online: ## test, also include the tests which query the online api.

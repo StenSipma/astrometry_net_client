@@ -2,9 +2,13 @@ import json
 
 import pytest
 import requests
-from constants import VALID_KEY
+from constants import (
+    FAILED_SUBMISSION_RESULT,
+    SUCCESS_SUBMISSION_RESULT,
+    VALID_KEY,
+)
 
-from astrometry_net_client import Job
+from astrometry_net_client import Job, Submission
 
 
 class ResponseObj:
@@ -22,8 +26,8 @@ class ResponseObj:
 
 class MockGetRequest:
     _response = {}
-    headers = {}
-    status_code = 500
+    headers = {"Content-Type": "text/plain"}
+    status_code = 200
 
     def __call__(self, *args, **kwargs):
         return ResponseObj(self._response, self.headers, self.status_code)
@@ -44,23 +48,63 @@ class MockSessionChecker:
         return ResponseObj(response, self.headers)
 
 
-class MockStatusResponseSuccess(MockGetRequest):
-    _response = {"status": "success"}
-    headers = {"Content-Type": "text/plain"}
-    status_code = 200
-
-
 @pytest.fixture
 def mock_session(monkeypatch):
     monkeypatch.setattr(requests, "post", MockSessionChecker())
 
 
+# Jobs
+class MockJobStatusResponseSuccess(MockGetRequest):
+    _response = {"status": "success"}
+
+
+class MockJobStatusResponseFailed(MockGetRequest):
+    _response = {"status": "faillure"}
+
+
 @pytest.fixture
 def mock_job_status(monkeypatch):
-    monkeypatch.setattr(requests, "get", MockStatusResponseSuccess())
+    monkeypatch.setattr(requests, "get", MockJobStatusResponseSuccess())
 
 
-# Online fixtures
+# Submissions
+class MockSubmissionResponseFailed(MockGetRequest):
+    _response = FAILED_SUBMISSION_RESULT
+
+    def __init__(self):
+        self.calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.calls += 1
+        if self.calls > 1:
+            return MockJobStatusResponseFailed()(*args, **kwargs)
+        return super().__call__(*args, **kwargs)
+
+
+class MockSubmissionResponseSuccess(MockGetRequest):
+    _response = SUCCESS_SUBMISSION_RESULT
+
+    def __init__(self):
+        self.calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.calls += 1
+        if self.calls > 1:
+            return MockJobStatusResponseSuccess()(*args, **kwargs)
+        return super().__call__(*args, **kwargs)
+
+
+@pytest.fixture
+def mock_submission_status_success(monkeypatch):
+    monkeypatch.setattr(requests, "get", MockSubmissionResponseSuccess())
+
+
+@pytest.fixture
+def mock_submission_status_failed(monkeypatch):
+    monkeypatch.setattr(requests, "get", MockSubmissionResponseFailed())
+
+
+## Online fixtures
 @pytest.fixture
 def success_job():
     job = Job(4446851)
@@ -71,3 +115,15 @@ def success_job():
 def failed_job():
     job = Job(4450465)
     return job
+
+
+@pytest.fixture
+def success_submission():
+    subm = Submission(3781056)
+    return subm
+
+
+@pytest.fixture
+def failed_submission():
+    subm = Submission(4113880)
+    return subm
