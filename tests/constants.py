@@ -1,5 +1,8 @@
 VALID_KEY = "valid key"
 
+STATUS_SUCCESS = {"status": "success"}
+STATUS_FAILURE = {"status": "failure"}
+
 SUCCESS_SUBMISSION_RESULT = {
     "user": 19291,
     "processing_started": "2020-08-20 21:39:18.078664",

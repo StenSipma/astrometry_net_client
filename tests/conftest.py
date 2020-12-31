@@ -4,38 +4,30 @@ import pytest
 import requests
 from constants import (
     FAILED_SUBMISSION_RESULT,
+    STATUS_FAILURE,
+    STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
     VALID_KEY,
 )
+from mocked_server import MockServer, ResponseObj
 
 from astrometry_net_client import Job, Submission
-
-
-class ResponseObj:
-    def __init__(self, response, headers, status_code=200):
-        self._response = response
-        self.headers = headers
-        self.status_code = status_code
-
-    def text(self):
-        return str(self._response)
-
-    def json(self):
-        return self._response
 
 
 class MockGetRequest:
     _response = {}
     headers = {"Content-Type": "text/plain"}
-    status_code = 200
+
+    def __init__(self, content=None, headers=None, status_code=200):
+        self._response = content if content else self._response
+        self.headers = headers if headers else self.headers
+        self.status_code = status_code
 
     def __call__(self, *args, **kwargs):
         return ResponseObj(self._response, self.headers, self.status_code)
 
 
 class MockSessionChecker:
-    headers = {"Content-Type": "text/plain"}
-
     def __call__(self, url, data, **kwargs):
         payload = json.loads(data["request-json"])
         if payload.get("apikey", "") == VALID_KEY:
@@ -45,7 +37,7 @@ class MockSessionChecker:
             }
         else:
             response = {"status": "error", "errormessage": "bad apikey"}
-        return ResponseObj(response, self.headers)
+        return ResponseObj(response)
 
 
 @pytest.fixture
@@ -53,58 +45,45 @@ def mock_session(monkeypatch):
     monkeypatch.setattr(requests, "post", MockSessionChecker())
 
 
-# Jobs
-class MockJobStatusResponseSuccess(MockGetRequest):
-    _response = {"status": "success"}
-
-
-class MockJobStatusResponseFailed(MockGetRequest):
-    _response = {"status": "faillure"}
-
-
 @pytest.fixture
 def mock_job_status(monkeypatch):
-    monkeypatch.setattr(requests, "get", MockJobStatusResponseSuccess())
+    monkeypatch.setattr(requests, "get", ())
 
 
 # Submissions
-class MockSubmissionResponseFailed(MockGetRequest):
-    _response = FAILED_SUBMISSION_RESULT
-
-    def __init__(self):
-        self.calls = 0
-
-    def __call__(self, *args, **kwargs):
-        self.calls += 1
-        if self.calls > 1:
-            return MockJobStatusResponseFailed()(*args, **kwargs)
-        return super().__call__(*args, **kwargs)
-
-
-class MockSubmissionResponseSuccess(MockGetRequest):
-    _response = SUCCESS_SUBMISSION_RESULT
-
-    def __init__(self):
-        self.calls = 0
-
-    def __call__(self, *args, **kwargs):
-        self.calls += 1
-        if self.calls > 1:
-            return MockJobStatusResponseSuccess()(*args, **kwargs)
-        return super().__call__(*args, **kwargs)
+@pytest.fixture
+def mock_status_success(monkeypatch):
+    mapper = {
+        "/api/submissions": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
+        "/api/jobs": MockGetRequest(STATUS_SUCCESS),
+    }
+    svr = MockServer(mapper)
+    monkeypatch.setattr(requests, "get", svr.get)
 
 
 @pytest.fixture
-def mock_submission_status_success(monkeypatch):
-    monkeypatch.setattr(requests, "get", MockSubmissionResponseSuccess())
+def mock_status_failure(monkeypatch):
+    mapper = {
+        "/api/submissions": MockGetRequest(FAILED_SUBMISSION_RESULT),
+        "/api/jobs": MockGetRequest(STATUS_FAILURE),
+    }
+    svr = MockServer(mapper)
+    monkeypatch.setattr(requests, "get", svr.get)
 
 
 @pytest.fixture
-def mock_submission_status_failed(monkeypatch):
-    monkeypatch.setattr(requests, "get", MockSubmissionResponseFailed())
+def mock_status(monkeypatch):
+    mapper = {
+        "/api/submissions/0": MockGetRequest(FAILED_SUBMISSION_RESULT),
+        "/api/submissions/1": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
+        "/api/jobs/0": MockGetRequest(STATUS_FAILURE),
+        "/api/jobs/1": MockGetRequest(STATUS_SUCCESS),
+    }
+    svr = MockServer(mapper)
+    monkeypatch.setattr(requests, "get", svr.get)
 
 
-## Online fixtures
+# Online fixtures
 @pytest.fixture
 def success_job():
     job = Job(4446851)
