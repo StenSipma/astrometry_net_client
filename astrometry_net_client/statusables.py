@@ -268,6 +268,10 @@ class Submission(Statusable):
     result of any of the :py:class:`astrometry_net_client.UploadFile` or
     :py:class:`astrometry_net_client.UploadURL` uploaders.
 
+    When :py:func:`status` is called and jobs are available, the status of the
+    jobs will also be queried. To see the response of these jobs, see their
+    ``response`` attribute.
+
     Note that some of the attributes listed below are only available when
     :py:func:`status` is queried.
 
@@ -325,12 +329,17 @@ class Submission(Statusable):
         self.processing_started = response["processing_started"]
         self.processing_finished = response["processing_finished"]
         self.user_images = response["user_images"]
+        self.user = response["user"]
         self.images = response["images"]
         self.job_calibrations = response["job_calibrations"]
 
         self.jobs = [
             Job(job_id) for job_id in response["jobs"] if job_id is not None
         ]
+
+        for job in self.jobs:
+            job.status()
+
         return response
 
     def _is_final_status(self):
@@ -399,7 +408,7 @@ class Job(Statusable):
 
     See Also
     --------
-    Statusable : For available function on getting the status & waiting
+    Statusable : For available functions on getting the status & waiting
     """
 
     url = BASE_URL + "/jobs/{job.id}"

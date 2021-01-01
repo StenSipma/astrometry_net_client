@@ -2,36 +2,33 @@ import json
 
 import pytest
 import requests
-from constants import VALID_KEY
+from constants import (
+    FAILED_SUBMISSION_RESULT,
+    JOB_INFO,
+    STATUS_FAILURE,
+    STATUS_SUCCESS,
+    SUCCESS_SUBMISSION_RESULT,
+    VALID_KEY,
+)
+from mocked_server import MockServer, ResponseObj
 
-from astrometry_net_client import Job
-
-
-class ResponseObj:
-    def __init__(self, response, headers, status_code=200):
-        self._response = response
-        self.headers = headers
-        self.status_code = status_code
-
-    def text(self):
-        return str(self._response)
-
-    def json(self):
-        return self._response
+from astrometry_net_client import Job, Submission
 
 
 class MockGetRequest:
     _response = {}
-    headers = {}
-    status_code = 500
+    headers = {"Content-Type": "text/plain"}
+
+    def __init__(self, content=None, headers=None, status_code=200):
+        self._response = content if content else self._response
+        self.headers = headers if headers else self.headers
+        self.status_code = status_code
 
     def __call__(self, *args, **kwargs):
         return ResponseObj(self._response, self.headers, self.status_code)
 
 
 class MockSessionChecker:
-    headers = {"Content-Type": "text/plain"}
-
     def __call__(self, url, data, **kwargs):
         payload = json.loads(data["request-json"])
         if payload.get("apikey", "") == VALID_KEY:
@@ -41,13 +38,7 @@ class MockSessionChecker:
             }
         else:
             response = {"status": "error", "errormessage": "bad apikey"}
-        return ResponseObj(response, self.headers)
-
-
-class MockStatusResponseSuccess(MockGetRequest):
-    _response = {"status": "success"}
-    headers = {"Content-Type": "text/plain"}
-    status_code = 200
+        return ResponseObj(response)
 
 
 @pytest.fixture
@@ -57,7 +48,44 @@ def mock_session(monkeypatch):
 
 @pytest.fixture
 def mock_job_status(monkeypatch):
-    monkeypatch.setattr(requests, "get", MockStatusResponseSuccess())
+    monkeypatch.setattr(requests, "get", ())
+
+
+# Submissions
+@pytest.fixture
+def mock_status_success(monkeypatch):
+    mapper = {
+        "/api/submissions": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
+        "/api/jobs": MockGetRequest(STATUS_SUCCESS),
+    }
+    svr = MockServer(mapper)
+    monkeypatch.setattr(requests, "get", svr.get)
+
+
+@pytest.fixture
+def mock_status_failure(monkeypatch):
+    mapper = {
+        "/api/submissions": MockGetRequest(FAILED_SUBMISSION_RESULT),
+        "/api/jobs": MockGetRequest(STATUS_FAILURE),
+    }
+    svr = MockServer(mapper)
+    monkeypatch.setattr(requests, "get", svr.get)
+
+
+@pytest.fixture
+def mock_status(monkeypatch):
+    mapper = {
+        "/api/submissions/0": MockGetRequest(FAILED_SUBMISSION_RESULT),
+        "/api/submissions/1": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
+        "/api/jobs/0": MockGetRequest(STATUS_FAILURE),
+        "/api/jobs/1": MockGetRequest(STATUS_SUCCESS),
+        "/api/jobs/4819815": MockGetRequest(STATUS_FAILURE),
+        "/api/jobs/4489363": MockGetRequest(STATUS_SUCCESS),
+        "/api/jobs/1/info": MockGetRequest(JOB_INFO),
+        "/api/jobs/4489363/info": MockGetRequest(JOB_INFO),
+    }
+    svr = MockServer(mapper)
+    monkeypatch.setattr(requests, "get", svr.get)
 
 
 # Online fixtures
@@ -71,3 +99,15 @@ def success_job():
 def failed_job():
     job = Job(4450465)
     return job
+
+
+@pytest.fixture
+def success_submission():
+    subm = Submission(3781056)
+    return subm
+
+
+@pytest.fixture
+def failed_submission():
+    subm = Submission(4113880)
+    return subm

@@ -114,18 +114,18 @@ class Client:
                 for filename in files_iter
             }
 
-        # iterate over the results once they are completed.
-        for future in as_completed(future_to_file):
-            result_filename = future_to_file[future]
-            try:
-                res_job = future.result()
-            except Exception as e:
-                # This exception is thrown inside the computed function.
-                err_msg = "File {} stopped with exception {}"
-                log.error(err_msg.format(result_filename, e))
-            else:
-                if res_job is not None:  # ignore if file was filtered out
-                    yield res_job, result_filename
+            # iterate over the results once they are completed.
+            for future in as_completed(future_to_file):
+                result_filename = future_to_file[future]
+                try:
+                    res_job = future.result()
+                except Exception as e:
+                    # This exception is thrown inside the computed function.
+                    err_msg = "File {} stopped with exception {}"
+                    log.error(err_msg.format(result_filename, e))
+                else:
+                    if res_job is not None:  # ignore if file was filtered out
+                        yield res_job, result_filename
 
     def filtered_upload_wrapper(
         self, filename, filter_func=None, filter_args=None, *args, **kwargs

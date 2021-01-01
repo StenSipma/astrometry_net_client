@@ -9,7 +9,11 @@ from photutils import DAOStarFinder
 
 from astrometry_net_client import Client
 
-logging.basicConfig(level=logging.INFO)
+FMT = (
+    "[%(asctime)s] %(threadName)-8s %(levelname)-8s |"
+    " %(funcName)s - %(message)s"
+)
+logging.basicConfig(level=logging.INFO, format=FMT)
 log = logging.getLogger(__name__)
 
 
@@ -28,7 +32,7 @@ def enough_sources(filename, min_sources=5):
     # terminate if not enough are found.
     # sources is None when no sources are found
     num_sources = len(sources) if sources is not None else 0
-    if sources is None or num_sources <= min_sources:
+    if sources is None or num_sources < min_sources:
         msg = "Not enough sources found: {} found, {} wanted."
         log.info(msg.format(num_sources, min_sources))
         return False
