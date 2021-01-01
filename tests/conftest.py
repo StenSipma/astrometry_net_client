@@ -4,11 +4,11 @@ import pytest
 import requests
 from constants import (
     FAILED_SUBMISSION_RESULT,
+    JOB_INFO,
     STATUS_FAILURE,
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
     VALID_KEY,
-    JOB_INFO,
 )
 from mocked_server import MockServer, ResponseObj
 

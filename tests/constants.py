@@ -38,4 +38,3 @@ JOB_INFO = {
         "parity": 1.0,
     },
 }
-

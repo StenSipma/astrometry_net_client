@@ -1,9 +1,9 @@
 import pytest
 import requests
+from utils import function_called_raiser
 
 from astrometry_net_client import Job
 from astrometry_net_client.exceptions import StatusFailedException
-from utils import function_called_raiser, FunctionCalledException
 
 
 @pytest.mark.mocked

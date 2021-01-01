@@ -5,4 +5,3 @@ class FunctionCalledException(Exception):
 
 def function_called_raiser(*args, **kwargs):
     raise FunctionCalledException()
-
