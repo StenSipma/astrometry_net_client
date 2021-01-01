@@ -1,3 +1,4 @@
+# Contains tests specific to Jobs
 import pytest
 import requests
 from utils import function_called_raiser
@@ -56,5 +57,6 @@ def test_mocked_job_status_failure(mock_status):
     assert job.done()
     assert not job.success()
 
+    # Should have this exception
     with pytest.raises(StatusFailedException):
         job.info()
