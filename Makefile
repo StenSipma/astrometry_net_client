@@ -11,7 +11,7 @@ TEST_ARGS=--cov --cov=$(PROJECT_NAME) --cov-report html -v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
-FLAKE_ARGS=--docstring-style=numpy
+FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503
 
 
 default: check-in-venv format lint install ## perform formatting and install
