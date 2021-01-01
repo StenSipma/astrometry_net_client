@@ -6,9 +6,9 @@ Astrometry.net Client
    :target: https://astrometry-net-client.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
    
-.. image:: https://github.com/StenSipma/astrometry_net_client/workflows/Astronomy.Net%20Client%20Actions/badge.svg
-   :target: https://github.com/StenSipma/astrometry_net_client/workflows/Astronomy.Net%20Client%20Actions
-   :alt: Build Status
+.. image:: https://github.com/StenSipma/astrometry_net_client/workflows/Build%20&%20Tests/badge.svg
+   :target: https://github.com/StenSipma/astrometry_net_client/workflows/Build%20&%20Tests
+   :alt: Build & Tests Status
 
 .. note:: 
    The package is still in development, but it can already be used. 
