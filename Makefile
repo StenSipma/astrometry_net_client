@@ -11,12 +11,13 @@ TEST_ARGS=--cov --cov=$(PROJECT_NAME) --cov-report html -v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
-FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503
+FLAKE_ARGS=--docstring-style=numpy --ignore=E203
+#,W503  (can also be added)
 
 
 default: check-in-venv format lint install ## perform formatting and install
 
-all: default dependencies test documentation ## perform all checks, including formatting and testing
+all: default test documentation ## perform all checks, including formatting and testing
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
