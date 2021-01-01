@@ -7,7 +7,7 @@ Astrometry.net Client
    :alt: Documentation Status
    
 .. image:: https://github.com/StenSipma/astrometry_net_client/workflows/Build%20&%20Tests/badge.svg
-   :target: https://github.com/StenSipma/astrometry_net_client/workflows/Build%20&%20Tests
+   :target: https://github.com/StenSipma/astrometry_net_client/actions?query=workflow%3A%22Build+%26+Tests%22
    :alt: Build & Tests Status
 
 .. note:: 
