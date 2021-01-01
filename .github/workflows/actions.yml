@@ -1,4 +1,4 @@
-name: Astronomy.Net Client Actions
+name: Build & Tests
 on: [push]
 jobs:
   all:
