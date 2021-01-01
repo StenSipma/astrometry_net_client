@@ -58,8 +58,8 @@ def test_submission_response(sid, result):
         assert job.id in result["jobs"]
 
 
-def test_submission_success(mock_status_success):
-    s = Submission(0)
+def test_submission_success(mock_status):
+    s = Submission(1)
     assert not s.success()
     assert not s.done()
     s.status()
@@ -67,7 +67,7 @@ def test_submission_success(mock_status_success):
     assert s.done()
 
 
-def test_submission_failure(mock_status_failure):
+def test_submission_failure(mock_status):
     s = Submission(0)
     assert not s.success()
     assert not s.done()

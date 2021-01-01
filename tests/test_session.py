@@ -7,18 +7,9 @@ from constants import VALID_KEY
 
 from astrometry_net_client import Session
 from astrometry_net_client.exceptions import APIKeyError, LoginFailedException
+from utils import function_called_raiser, FunctionCalledException
 
 some_key = "somekey"
-
-
-# Some general definitions
-class FunctionCalledException(Exception):
-    pass
-
-
-def function_called_raiser(*args, **kwargs):
-    raise FunctionCalledException()
-
 
 # Start of tests
 def test_session_key_input_invalid():

@@ -8,6 +8,7 @@ from constants import (
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
     VALID_KEY,
+    JOB_INFO,
 )
 from mocked_server import MockServer, ResponseObj
 
@@ -78,6 +79,10 @@ def mock_status(monkeypatch):
         "/api/submissions/1": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
         "/api/jobs/0": MockGetRequest(STATUS_FAILURE),
         "/api/jobs/1": MockGetRequest(STATUS_SUCCESS),
+        "/api/jobs/4819815": MockGetRequest(STATUS_FAILURE),
+        "/api/jobs/4489363": MockGetRequest(STATUS_SUCCESS),
+        "/api/jobs/1/info": MockGetRequest(JOB_INFO),
+        "/api/jobs/4489363/info": MockGetRequest(JOB_INFO),
     }
     svr = MockServer(mapper)
     monkeypatch.setattr(requests, "get", svr.get)
