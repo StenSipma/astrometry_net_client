@@ -37,7 +37,7 @@ def test_session_key_input_environment():
     assert s.api_key == some_key
 
 
-def test_valid_session_login(mock_session, monkeypatch):
+def test_valid_session_login(mock_server, monkeypatch):
     session = Session(api_key=VALID_KEY)
     session.login()  # login for the first time
     assert session.logged_in
@@ -56,7 +56,7 @@ def test_valid_session_login(mock_session, monkeypatch):
         session.login(force=True)
 
 
-def test_invalid_session_login(mock_session):
+def test_invalid_session_login(mock_server):
     session = Session(api_key="invalid_key")
     with pytest.raises(LoginFailedException):
         session.login()

@@ -220,7 +220,7 @@ class Statusable(abc.ABC):
             "Starting the until done loop with: sleep_time = {}, timeout = {}"
         )
         log.debug(log_msg.format(sleep_time, timeout))
-        while timeout is None or start_time - now() < timeout:
+        while timeout is None or now() - start_time < timeout:
             response = self.status()
             log.debug("Current status response: {}".format(response))
 

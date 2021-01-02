@@ -4,12 +4,20 @@ import requests
 from utils import function_called_raiser
 
 from astrometry_net_client import Job
-from astrometry_net_client.exceptions import StatusFailedException
+from astrometry_net_client.exceptions import (
+    StatusFailedException,
+    StillProcessingException,
+)
 
 
 @pytest.mark.mocked
-def test_mocked_job_status_success(mock_status, monkeypatch):
+def test_mocked_job_status_success(mock_server, monkeypatch):
     job = Job(1)
+
+    strjob = str(job)
+    reprjob = repr(job)
+    assert strjob != ""
+    assert reprjob != ""
 
     assert hash(job) == hash(1)
     # No status queried yet
@@ -22,6 +30,9 @@ def test_mocked_job_status_success(mock_status, monkeypatch):
     assert job.success()
     assert response == {"status": "success"}
     assert job.resp_status == "success"
+
+    assert str(job) != strjob
+    assert repr(job) == reprjob
 
     info = job.info()
     assert info is not None
@@ -43,7 +54,7 @@ def test_mocked_job_status_success(mock_status, monkeypatch):
 
 
 @pytest.mark.mocked
-def test_mocked_job_status_failure(mock_status):
+def test_mocked_job_status_failure(mock_server):
     job = Job(0)
 
     # No status queried yet
@@ -60,3 +71,22 @@ def test_mocked_job_status_failure(mock_status):
     # Should have this exception
     with pytest.raises(StatusFailedException):
         job.info()
+
+
+def test_job_still_solving(mock_server):
+    job = Job(2)
+
+    with pytest.raises(StillProcessingException):
+        job.info()
+
+
+@pytest.mark.long
+def test_job_timeout(mock_server):
+    job = Job(2)
+    with pytest.raises(TimeoutError):
+        job.until_done(timeout=0)  # immediate timeout
+
+    job_2 = Job(3)
+    with pytest.raises(TimeoutError):
+        # timeout after two queries
+        job_2.until_done(start=1, end=1, timeout=2)
