@@ -5,7 +5,7 @@ with open("README.rst", "r") as f:
 
 setuptools.setup(
     name="astrometry_net_client",
-    version="0.2",
+    version="0.2.1",
     author="Sten Sipma",
     author_email="sten.sipma@ziggo.nl",
     description="A Python interface for the Astrometry.net API.",
