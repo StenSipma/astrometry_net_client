@@ -6,8 +6,8 @@ from astropy.io import fits
 from constants import (
     FAILED_SUBMISSION_RESULT,
     FILE,
-    JOB_SUCCESS_INFO,
     JOB_FAILED_INFO,
+    JOB_SUCCESS_INFO,
     STATUS_FAILURE,
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
