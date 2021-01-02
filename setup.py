@@ -14,6 +14,7 @@ setuptools.setup(
     url="https://github.com/StenSipma/astrometry_net_client",
     packages=["astrometry_net_client"],
     install_requires=["astropy", "requests"],
+    keywords="astronomy astrometry client coordinates wcs api",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
@@ -23,10 +24,6 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Operating System :: POSIX :: Linux",
         "Natural Language :: English",
-        "Astrometry.Net",
-        "Astrometry",
-        "WCS",
-        "Coordinates",
     ],
     python_requires=">=3.8",
 )
