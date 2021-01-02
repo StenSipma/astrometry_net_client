@@ -14,6 +14,11 @@ from astrometry_net_client.exceptions import (
 def test_mocked_job_status_success(mock_server, monkeypatch):
     job = Job(1)
 
+    strjob = str(job)
+    reprjob = repr(job)
+    assert strjob != ""
+    assert reprjob != ""
+
     assert hash(job) == hash(1)
     # No status queried yet
     assert not job.done()
@@ -25,6 +30,9 @@ def test_mocked_job_status_success(mock_server, monkeypatch):
     assert job.success()
     assert response == {"status": "success"}
     assert job.resp_status == "success"
+
+    assert str(job) != strjob
+    assert repr(job) == reprjob
 
     info = job.info()
     assert info is not None
@@ -71,11 +79,8 @@ def test_job_still_solving(mock_server):
     with pytest.raises(StillProcessingException):
         job.info()
 
-    job_2 = Job(3)
-    with pytest.raises(StillProcessingException):
-        job_2.wcs_file()
 
-
+@pytest.mark.long
 def test_job_timeout(mock_server):
     job = Job(2)
     with pytest.raises(TimeoutError):

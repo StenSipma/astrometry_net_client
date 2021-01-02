@@ -3,6 +3,7 @@ import pytest
 from constants import FAILED_SUBMISSION_RESULT, SUCCESS_SUBMISSION_RESULT
 
 from astrometry_net_client import Job, Submission
+from astrometry_net_client.exceptions import StillProcessingException
 
 
 @pytest.mark.parametrize(
@@ -70,6 +71,11 @@ def test_submission_response(sid, result):
 def test_submission(sid, success, result, mock_server):
     submission = Submission(sid)
 
+    strsubm = str(submission)
+    reprsubm = repr(submission)
+    assert strsubm != ""
+    assert reprsubm != ""
+
     assert not submission.success()
     assert not submission.done()
 
@@ -77,6 +83,9 @@ def test_submission(sid, success, result, mock_server):
 
     assert submission.success() == success
     assert submission.done()
+
+    assert str(submission) != strsubm
+    assert repr(submission) == reprsubm
 
     # Make sure the until done function produces the same result
     ud_response = submission.until_done()
@@ -98,3 +107,9 @@ def test_submission(sid, success, result, mock_server):
     # test if job ids correspond correctly
     for job in submission:
         assert job.id in result["jobs"]
+
+
+def test_submission_still_solving(mock_server):
+    submission = Submission(2)
+    with pytest.raises(StillProcessingException):
+        jobs = iter(submission)

@@ -1,3 +1,4 @@
+import pytest
 from constants import FILE, VALID_KEY
 
 from astrometry_net_client import FileUpload, Session
@@ -35,6 +36,7 @@ def test_upload(mock_server):
     assert submission.success()
 
 
+@pytest.mark.long
 def test_upload_until_done(mock_server):
     session = Session(VALID_KEY)
     upl = FileUpload(FILE, session)
