@@ -6,6 +6,29 @@ FILE = "./tests/data/target.200417.00000088.3x3.FR.fits"
 STATUS_SUCCESS = {"status": "success"}
 STATUS_FAILURE = {"status": "failure"}
 
+WAITING_SUBMISSION_RESULT = {
+    "user": 19291,
+    "processing_started": "2021-01-02 13:04:40.768054",
+    "processing_finished": "2021-01-02 13:04:41.266073",
+    "user_images": [4267396],
+    "images": [8984579],
+    "jobs": [None],
+    "job_calibrations": [],
+}
+
+# TODO: if the job is not finished, then the job_calibrations value should
+#       be empy
+SUCCESS_SUBMISSION_RESULT_2 = {
+    "user": 19291,
+    "processing_started": "2020-08-20 21:39:18.078664",
+    "processing_finished": "2020-08-20 21:39:23.751193",
+    "user_images": [3923714],
+    "images": [9000296],
+    "jobs": [2],
+    "job_calibrations": [[4489363, 3030589]],
+}
+
+
 SUCCESS_SUBMISSION_RESULT = {
     "user": 19291,
     "processing_started": "2020-08-20 21:39:18.078664",

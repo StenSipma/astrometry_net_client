@@ -8,6 +8,8 @@ from constants import (
     STATUS_FAILURE,
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
+    SUCCESS_SUBMISSION_RESULT_2,
+    WAITING_SUBMISSION_RESULT,
     VALID_KEY,
     VALID_TOKEN,
     FILE,
@@ -44,6 +46,24 @@ class MockSessionChecker:
         return ResponseObj(response)
 
 
+class MockDelayedRequest(MockGetRequest):
+    _wait = {"status": "solving"}
+
+    def __init__(self, *args, wait_content=None, delays=1, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.delays = delays
+        self.wait_content = wait_content if wait_content else self._wait
+        self.done_content = self._response
+        self._response = self.wait_content
+
+    def __call__(self, *args, **kwargs):
+        if self.delays > 0:
+            self.delays -= 1
+        else:
+            self._response = self.done_content
+        return super().__call__(*args, **kwargs)
+
+
 class MockUpload:
     def __call__(self, url, data, **kwargs):
         payload = json.loads(data["request-json"])
@@ -77,9 +97,13 @@ def mock_server(monkeypatch):
     get_mapper = {
         "/api/submissions/0": MockGetRequest(FAILED_SUBMISSION_RESULT),
         "/api/submissions/1": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
-        "/api/submissions/2": MockGetRequest(SUCCESS_SUBMISSION_RESULT),
+        "/api/submissions/2": MockDelayedRequest(
+            content=SUCCESS_SUBMISSION_RESULT_2,
+            wait_content=WAITING_SUBMISSION_RESULT,
+        ),
         "/api/jobs/0": MockGetRequest(STATUS_FAILURE),
         "/api/jobs/1": MockGetRequest(STATUS_SUCCESS),
+        "/api/jobs/2": MockDelayedRequest(STATUS_SUCCESS),
         "/api/jobs/4819815": MockGetRequest(STATUS_FAILURE),
         "/api/jobs/4489363": MockGetRequest(STATUS_SUCCESS),
         "/api/jobs/1/info": MockGetRequest(JOB_INFO),
