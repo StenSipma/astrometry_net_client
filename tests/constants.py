@@ -1,4 +1,7 @@
 VALID_KEY = "valid key"
+VALID_TOKEN = "the session token/key"
+
+FILE = "./tests/data/target.200417.00000088.3x3.FR.fits"
 
 STATUS_SUCCESS = {"status": "success"}
 STATUS_FAILURE = {"status": "failure"}

@@ -37,6 +37,7 @@ def test_statusables(statusable, success):
 @pytest.mark.online
 def test_submission_response(sid, result):
     submission = Submission(sid)
+
     response = submission.status()
     ud_response = submission.until_done()
 
@@ -59,19 +60,41 @@ def test_submission_response(sid, result):
         assert job.id in result["jobs"]
 
 
-def test_submission_success(mock_status):
-    s = Submission(1)
-    assert not s.success()
-    assert not s.done()
-    s.status()
-    assert s.success()
-    assert s.done()
+@pytest.mark.parametrize(
+    "sid, success, result",
+    [
+        (0, False, FAILED_SUBMISSION_RESULT),
+        (1, True, SUCCESS_SUBMISSION_RESULT),
+    ],
+)
+def test_submission(sid, success, result, mock_server):
+    submission = Submission(sid)
 
+    assert not submission.success()
+    assert not submission.done()
 
-def test_submission_failure(mock_status):
-    s = Submission(0)
-    assert not s.success()
-    assert not s.done()
-    s.status()
-    assert not s.success()
-    assert s.done()
+    response = submission.status()
+
+    assert submission.success() == success
+    assert submission.done()
+
+    # Make sure the until done function produces the same result
+    ud_response = submission.until_done()
+
+    assert response == result
+    assert response == ud_response
+
+    for key in result.keys():
+        print(f"{key=}")
+        assert hasattr(submission, key)
+        if key != "jobs":
+            assert getattr(submission, key) == result[key]
+
+    # test iteration is done properly
+    for j1, j2 in zip(submission, submission.jobs):
+        print(f"{j1=}, {j2=}")
+        assert j1 == j2
+
+    # test if job ids correspond correctly
+    for job in submission:
+        assert job.id in result["jobs"]

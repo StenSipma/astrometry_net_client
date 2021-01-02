@@ -81,7 +81,7 @@ clean-package:
 	-rm -r dist
 
 clean-docs:
-	make --directory=docs clean
+	-make --directory=docs clean
 
 clean-reports:
 	-rm -r htmlcov

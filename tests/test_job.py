@@ -8,7 +8,7 @@ from astrometry_net_client.exceptions import StatusFailedException
 
 
 @pytest.mark.mocked
-def test_mocked_job_status_success(mock_status, monkeypatch):
+def test_mocked_job_status_success(mock_server, monkeypatch):
     job = Job(1)
 
     assert hash(job) == hash(1)
@@ -43,7 +43,7 @@ def test_mocked_job_status_success(mock_status, monkeypatch):
 
 
 @pytest.mark.mocked
-def test_mocked_job_status_failure(mock_status):
+def test_mocked_job_status_failure(mock_server):
     job = Job(0)
 
     # No status queried yet
