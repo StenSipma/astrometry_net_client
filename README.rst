@@ -68,14 +68,14 @@ Similarely, retrieving files like the WCS file (after a successful ``Job``) will
 Installation
 ------------
 
-Installation required python version 3.7 or greater.
+Installation required python version 3.8 or greater.
 
-For the moment, there is a test version available at test.pypi, which can be installed by::
+Simpy install the package usng PyPi::
 
-        pip install astropy requests
-        pip install -i https://test.pypi.org/simple/ astrometry-net-client==0.1 --no-deps
+        pip install astrometry_net_client
 
-It is important to pip install the dependencies separately, as these are not guarenteed to exist on test.pypi! Also, the latest version in the repository may not be equal to the version on test.pypi, even if the version numbers are the same.
+Note that the development and testing of this package is done on Linux, so it
+may not work on a different platform.
 
 Installing From Source
 """"""""""""""""""""""
@@ -88,7 +88,11 @@ It is heavily recommended to use a virtual environment. Create and activate one 
         source .env/bin/activate
         pip install wheel
 
-Then build & install the package with::
+Then build & install the package with (does not install development dependencies)::
+
+        make quick-install
+
+If you also want to install the dependencies required for development, use::
 
         make install
 
