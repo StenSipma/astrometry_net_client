@@ -112,4 +112,4 @@ def test_submission(sid, success, result, mock_server):
 def test_submission_still_solving(mock_server):
     submission = Submission(2)
     with pytest.raises(StillProcessingException):
-        jobs = iter(submission)
+        iter(submission)

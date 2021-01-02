@@ -1,9 +1,9 @@
-import pytest
-from unittest import mock
 import os
-from itertools import repeat
+from unittest import mock
 
-from constants import VALID_KEY, FILE
+import pytest
+from constants import FILE, VALID_KEY
+
 from astrometry_net_client import Client, Session, Settings
 from astrometry_net_client.exceptions import LoginFailedException
 
@@ -79,4 +79,3 @@ def test_client_upload_multiple(mock_server):
         assert filename == FILE
         assert job.done()
         assert job.success()
-
