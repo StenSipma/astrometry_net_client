@@ -32,6 +32,9 @@ package:
 	$(PY) setup.py sdist bdist_wheel
 
 # Uploading
+upload-pypi: package
+	python3 -m twine upload dist/*
+
 upload-test: package
 	python3 -m twine upload --repository testpypi dist/*
 

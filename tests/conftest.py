@@ -6,7 +6,8 @@ from astropy.io import fits
 from constants import (
     FAILED_SUBMISSION_RESULT,
     FILE,
-    JOB_INFO,
+    JOB_FAILED_INFO,
+    JOB_SUCCESS_INFO,
     STATUS_FAILURE,
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
@@ -107,8 +108,10 @@ def mock_server(monkeypatch):
         "/api/jobs/3": MockDelayedRequest(STATUS_SUCCESS, delays=10),
         "/api/jobs/4819815": MockGetRequest(STATUS_FAILURE),
         "/api/jobs/4489363": MockGetRequest(STATUS_SUCCESS),
-        "/api/jobs/1/info": MockGetRequest(JOB_INFO),
-        "/api/jobs/4489363/info": MockGetRequest(JOB_INFO),
+        "/api/jobs/0/info": MockGetRequest(JOB_FAILED_INFO),
+        "/api/jobs/1/info": MockGetRequest(JOB_SUCCESS_INFO),
+        "/api/jobs/4819815/info": MockGetRequest(JOB_FAILED_INFO),
+        "/api/jobs/4489363/info": MockGetRequest(JOB_SUCCESS_INFO),
     }
 
     post_mapper = {

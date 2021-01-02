@@ -450,7 +450,7 @@ class Job(Statusable):
     def _status_success(self):
         return self.resp_status == "success"
 
-    @ensure_status_success
+    @ensure_status
     @cache_response
     def info(self):
         r = Request(self.url + self.info_suffix)

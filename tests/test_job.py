@@ -68,9 +68,21 @@ def test_mocked_job_status_failure(mock_server):
     assert job.done()
     assert not job.success()
 
+    info = job.info()
+    assert info is not None
+    assert info.get("calibration") is None
+    assert isinstance(info, dict)
+    assert info["status"] == "failure"
+
+    for key in info.keys():
+        print(f"{key=}")
+        assert hasattr(job, key)
+        if key != "status":
+            assert getattr(job, key) == info[key]
+
     # Should have this exception
     with pytest.raises(StatusFailedException):
-        job.info()
+        job.wcs_file()
 
 
 def test_job_still_solving(mock_server):
