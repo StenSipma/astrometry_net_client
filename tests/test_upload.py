@@ -1,7 +1,6 @@
-import pytest
+from constants import FILE, VALID_KEY
 
 from astrometry_net_client import FileUpload, Session
-from constants import VALID_KEY, FILE
 
 
 def test_upload(mock_server):

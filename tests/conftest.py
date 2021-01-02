@@ -2,20 +2,20 @@ import json
 
 import pytest
 import requests
+from astropy.io import fits
 from constants import (
     FAILED_SUBMISSION_RESULT,
+    FILE,
     JOB_INFO,
     STATUS_FAILURE,
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
     SUCCESS_SUBMISSION_RESULT_2,
-    WAITING_SUBMISSION_RESULT,
     VALID_KEY,
     VALID_TOKEN,
-    FILE,
+    WAITING_SUBMISSION_RESULT,
 )
 from mocked_server import MockServer, ResponseObj
-from astropy.io import fits
 
 from astrometry_net_client import Job, Submission
 
