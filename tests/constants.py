@@ -48,8 +48,15 @@ FAILED_SUBMISSION_RESULT = {
     "jobs": [4819815],
     "job_calibrations": [],
 }
+JOB_FAILED_INFO = {
+    "objects_in_field": [],
+    "machine_tags": [],
+    "tags": [],
+    "status": "failure",
+    "original_filename": "090317_Li_060.fits",
+}
 
-JOB_INFO = {
+JOB_SUCCESS_INFO = {
     "objects_in_field": ["NGC 3982"],
     "machine_tags": ["NGC 3982"],
     "tags": ["NGC 3982"],
