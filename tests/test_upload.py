@@ -33,3 +33,12 @@ def test_upload(mock_server):
     assert job.done()
     assert job.success()
     assert submission.success()
+
+
+def test_upload_until_done(mock_server):
+    session = Session(VALID_KEY)
+    upl = FileUpload(FILE, session)
+    submission = upl.submit()
+    submission.until_done()
+    assert submission.done()
+

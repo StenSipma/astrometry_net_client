@@ -104,6 +104,7 @@ def mock_server(monkeypatch):
         "/api/jobs/0": MockGetRequest(STATUS_FAILURE),
         "/api/jobs/1": MockGetRequest(STATUS_SUCCESS),
         "/api/jobs/2": MockDelayedRequest(STATUS_SUCCESS),
+        "/api/jobs/3": MockDelayedRequest(STATUS_SUCCESS, delays=10),
         "/api/jobs/4819815": MockGetRequest(STATUS_FAILURE),
         "/api/jobs/4489363": MockGetRequest(STATUS_SUCCESS),
         "/api/jobs/1/info": MockGetRequest(JOB_INFO),

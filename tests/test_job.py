@@ -4,7 +4,10 @@ import requests
 from utils import function_called_raiser
 
 from astrometry_net_client import Job
-from astrometry_net_client.exceptions import StatusFailedException
+from astrometry_net_client.exceptions import (
+    StatusFailedException,
+    StillProcessingException,
+)
 
 
 @pytest.mark.mocked
@@ -60,3 +63,25 @@ def test_mocked_job_status_failure(mock_server):
     # Should have this exception
     with pytest.raises(StatusFailedException):
         job.info()
+
+
+def test_job_still_solving(mock_server):
+    job = Job(2)
+
+    with pytest.raises(StillProcessingException):
+        job.info()
+
+    job_2 = Job(3)
+    with pytest.raises(StillProcessingException):
+        job_2.wcs_file()
+
+
+def test_job_timeout(mock_server):
+    job = Job(2)
+    with pytest.raises(TimeoutError):
+        job.until_done(timeout=0)  # immediate timeout
+
+    job_2 = Job(3)
+    with pytest.raises(TimeoutError):
+        # timeout after two queries
+        job_2.until_done(start=1, end=1, timeout=2)
