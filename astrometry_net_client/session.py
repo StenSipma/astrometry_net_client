@@ -20,7 +20,7 @@ class Session(object):
 
     def __init__(self, api_key=None, key_location=None):
         if api_key is not None:
-            self.api_key = api_key
+            self.api_key = api_key.strip()
         elif key_location is not None:
             self.api_key = read_api_key(key_location)
         else:

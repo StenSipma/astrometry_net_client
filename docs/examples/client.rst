@@ -7,7 +7,7 @@ It is executed as follows::
         
         $ python3 client.py path/to/keyfile file.fits another.fits directory/*.fits
 
-, where the first argument is the location of the api key and the remaining
+where the first argument is the location of the api key and the remaining
 arguments are (paths to) fits files.
 
 GitHub source is found here_.
