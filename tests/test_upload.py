@@ -41,4 +41,3 @@ def test_upload_until_done(mock_server):
     submission = upl.submit()
     submission.until_done()
     assert submission.done()
-
