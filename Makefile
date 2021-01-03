@@ -65,6 +65,8 @@ test-all: ## test-online, also include the long tests (i.e. uploading files)
 help: ## Prints help for targets with comments
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+git-pre-push: check-format lint
+
 ## Formatting and linting
 format: ## Format all the files using black and isort
 	black $(BLACK_ARGS) $(PY_FILES)
