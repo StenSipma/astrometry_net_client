@@ -29,6 +29,12 @@ class Session(object):
 
     Examples
     --------
+    Normal usage of a session is as follows; you create the Session class, and
+    then :py:func:`login`:
+
+    >>> session = Session('the api key')
+    >>> session.login()
+
     There are multiple ways of giving your api key. You can just give it as
     a plain string (not very safe):
 
@@ -39,8 +45,8 @@ class Session(object):
 
     >>> session_2 = Session(key_location='path/to/file/with/key')
 
-    You can specify the key as an environment variable named 
-    `ASTROMETRY_API_KEY`.
+    You can specify the key as an environment variable named
+    ``ASTROMETRY_API_KEY``.
 
     >>> session_3 = Session()
 
@@ -58,9 +64,6 @@ class Session(object):
     url = login_url
 
     def __init__(self, api_key: str = None, key_location: str = None):
-        """
-        Some documentation
-        """
         if api_key is not None:
             self.api_key = api_key.strip()
         elif key_location is not None:
@@ -81,12 +84,12 @@ class Session(object):
         """
         Method used to log-in or start a session with the Astrometry.net API.
 
-        Only sends a request if it is absolutely needed (or forced to).
-        If :py:attr:`logged_in` is True, it assumes the session is still valid (there is
-        no way to check if the session is still valid).
+        Only sends a request if it is absolutely needed (or forced to).  If
+        :py:attr:`logged_in` is True, it assumes the session is still valid
+        (there is no way to check if the session is still valid).
 
-        After a successful login, the session key is stored in the :py:attr:`key`
-        attribute and :py:attr:`logged_in` is set to `True`.
+        After a successful login, the session key is stored in the
+        :py:attr:`key` attribute and :py:attr:`logged_in` is set to `True`.
 
         Parameters
         ----------
