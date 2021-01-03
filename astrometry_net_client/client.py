@@ -91,7 +91,7 @@ class Client:
 
         Yields
         ------
-        (:py:class:`astrometry_net_client.statusables.Job`, str):
+        (:py:class:`astrometry_net_client.statusables.Job`, ``str``):
             A tuple containing the finished
             :py:class:`astrometry_net_client.statusables.Job` and the
             corresponding filename. Yields when the Job is finished.
@@ -182,11 +182,11 @@ class Client:
 
         Returns
         -------
-        Resulting Job: :py:class:`astrometry_net_client.statusables.Job`
+        Job: :py:class:`astrometry_net_client.statusables.Job`
             The job of the resulting upload. NOTE: It is possible that the job
             did not succeed, therefore check with
-            :py:class:`astrometry_net_client.statusables.Job.success` if it
-            did.
+            :py:meth:`astrometry_net_client.statusables.Statusable.success` if
+            it did.
         """
         upl_settings = self.settings
         if settings is not None:
