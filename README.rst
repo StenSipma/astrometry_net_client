@@ -72,7 +72,7 @@ Installation required python version 3.8 or greater.
 
 Simpy install the package usng PyPi::
 
-        pip install astrometry_net_client
+        pip install astrometry-net-client
 
 Note that the development and testing of this package is done on Linux, so it
 may not work on a different platform.

@@ -9,7 +9,7 @@ be used to interact with all api endpoints.
 .. note:: 
    The documentation (much like the package) is still a work in progress, so
    there will be additions and refinements. However, most of the classes and
-   methods are documented, and can be found at the :doc:`modules/overview`
+   methods are documented, and can be found at the :doc:`modules`
    page.
 
 I am open to any suggested additions or feedback, so do not hesitate to open an
@@ -24,8 +24,9 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   examples/overview
-   modules/overview
+   overview
+   examples
+   modules
    help
 
 
