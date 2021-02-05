@@ -11,8 +11,9 @@ TEST_ARGS=--cov --cov=$(PROJECT_NAME) --cov-report html -v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
-FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503
+FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503,DAR402
 
+PIP_IGNORE_PKG=--exclude pynvim --exclude astrometry_net_client
 
 default: check-in-venv format lint install ## perform formatting and install
 
@@ -97,3 +98,7 @@ clean-reports:
 
 virt-env:
 	python3 -m venv .env
+
+pip-freeze:
+	mv requirements.txt requirements.txt.bak
+	pip freeze $(PIP_IGNORE_PKG) > requirements.txt
