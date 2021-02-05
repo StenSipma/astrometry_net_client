@@ -66,10 +66,10 @@ def ensure_status_success(func):
     Raises
     ------
     StatusFailedException
-        when the :py:meth:`success` evaluates to ``False`` but
+        When the :py:meth:`success` evaluates to ``False`` but
         :py:meth:`done` to ``True``.
     StillProcessingException
-        when :py:meth:`done` is ``False``
+        When :py:meth:`done` is ``False``
     """
 
     @wraps(func)

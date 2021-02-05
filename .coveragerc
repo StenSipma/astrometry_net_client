@@ -1,6 +1,6 @@
 [paths]
 source = ./astrometry_net_client/
-        ./.env/lib/python3.8/site-packages/astrometry_net_client
+        ./.env/lib/*/site-packages/astrometry_net_client
 
 [report]
 omit = .env/* 
