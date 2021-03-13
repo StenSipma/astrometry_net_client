@@ -3,14 +3,17 @@ on: [push]
 jobs:
   all:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+          python-version: [3.7, 3.8, 3.9]
     steps:
       # All steps for setting up
       - uses: actions/checkout@v2
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with: 
-          python-version: '3.8'
+          python-version: ${{ matrix.python-version }}
           # Default architecture: x64 
     
       - name: Setup caching for pip
