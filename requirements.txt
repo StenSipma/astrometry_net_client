@@ -14,7 +14,7 @@ chardet==3.0.4
 click==7.1.2
 colorama==0.4.4
 coverage==5.4
-cryptography==3.3.1
+cryptography==3.3.2
 darglint==1.6.0
 docutils==0.16
 flake8==3.8.4
