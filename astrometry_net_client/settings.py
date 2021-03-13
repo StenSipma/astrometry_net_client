@@ -1,6 +1,6 @@
 import numbers
 from collections import UserDict
-from typing import NamedTuple, Callable, Optional
+from typing import Callable, NamedTuple, Optional
 
 # TODO idea, replace the settings with descriptors ?
 # TODO  e.g. an angle descriptor, which can handle astropy units

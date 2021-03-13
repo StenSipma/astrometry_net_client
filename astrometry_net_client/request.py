@@ -1,11 +1,9 @@
 import json
 import logging
-
 from typing import Union, cast
+
 import requests
 from astropy.io import fits
-
-from astrometry_net_client.settings import Settings
 
 from astrometry_net_client.exceptions import (
     InvalidRequest,
@@ -13,6 +11,7 @@ from astrometry_net_client.exceptions import (
     NoSessionError,
     UnkownContentError,
 )
+from astrometry_net_client.settings import Settings
 
 log = logging.getLogger(__name__)
 
