@@ -40,6 +40,10 @@ jobs:
       - name: Install package
         run: make package-install
 
+      # Do some type checking
+      - name: Type Checking for Version ${{ matrix.python-version }}
+        run: PY_VERSION=${{ matrix.python-version }} make --environment type-check
+
       # Actually run the tests for the package
       - name: Test the package
         run: make test-long

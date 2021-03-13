@@ -2,8 +2,17 @@ PY=python3
 PIP=pip
 TEST=pytest
 
+# Override this variable (or any other) by using the --environment option:
+#  $ PY_VERSION=3.8 make --environment type-check
+PY_VERSION=3.9
+
 PROJECT_NAME=astrometry_net_client
-PY_FILES=$(PROJECT_NAME)/*.py tests/*.py setup.py examples/*.py
+
+PROJ_FILES=$(PROJECT_NAME)/*.py
+TEST_FILES=tests/*.py
+EXAMPLE_FILES=examples/*.py
+CONFIG_FILES=setup.py 
+PY_FILES=$(PROJ_FILES) $(TEST_FILES) $(EXAMPLE_FILES) $(CONFIG_FILES)
 
 # Add the following options for a testresults JUnit like xml report
 #-o junit_family=xunit2 --junitxml="testresults.xml"
@@ -15,7 +24,7 @@ FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503,DAR402
 
 PIP_IGNORE_PKG=--exclude pynvim --exclude astrometry_net_client
 
-default: check-in-venv format lint install ## perform formatting and install
+default: check-in-venv format lint type-check install ## perform formatting and install
 
 all: default test documentation ## perform all checks, including formatting and testing
 
@@ -80,7 +89,11 @@ check-format:
 lint: ## Check the linting of all files
 	flake8 $(FLAKE_ARGS) $(PY_FILES)
 
+type-check: ## Check Type annotations using MyPy
+	mypy --python-version=$(PY_VERSION) $(PROJ_FILES) $(TEST_FILES) $(EXAMPLE_FILES)
 
+
+## Cleanup rules
 clean: clean-package clean-docs clean-reports  ## Cleanup
 
 clean-package:
@@ -96,9 +109,10 @@ clean-reports:
 	-rm .coverage
 	-rm testresults.xml
 
+## Misc rules
 virt-env:
 	python3 -m venv .env
 
-pip-freeze:
+pip-freeze: ## Update requirements.txt and make a backup (for safety) of the current one
 	mv requirements.txt requirements.txt.bak
 	pip freeze $(PIP_IGNORE_PKG) > requirements.txt

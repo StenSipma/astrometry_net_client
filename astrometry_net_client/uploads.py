@@ -1,7 +1,9 @@
 import abc
+from typing import Union, cast
 
 from astrometry_net_client.config import upload_url
-from astrometry_net_client.request import AuthorizedRequest, PostRequest
+from astrometry_net_client.request import PostRequest
+from astrometry_net_client.session import SessionRequest
 from astrometry_net_client.statusables import Submission
 
 
@@ -19,10 +21,10 @@ class Submitter(abc.ABC):
     """
 
     @abc.abstractmethod
-    def _make_request(self):
+    def make(self) -> Union[dict, bytes]:
         pass
 
-    def submit(self):
+    def submit(self) -> Submission:
         """
         Submit function, similar to ``make`` but in addition creates and
         returns the resulting submission.
@@ -33,11 +35,11 @@ class Submitter(abc.ABC):
             The submission which is created by the API. Use this to get the
             status & result(s) of your upload.
         """
-        response = self.make()
+        response = cast(dict, self.make())
         return Submission(response["subid"])
 
 
-class BaseUpload(AuthorizedRequest, PostRequest, Submitter):
+class BaseUpload(SessionRequest, PostRequest, Submitter):
     """
     Extends from:
 
@@ -88,15 +90,15 @@ class FileUpload(BaseUpload):
         The submission object, which is created when you upload a file.
     """
 
-    url = upload_url
+    url: str = upload_url
 
-    def __init__(self, filename, *args, **kwargs):
+    def __init__(self, filename: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # TODO check if file exists?
         # TODO check if file has the correct type
         self.filename = filename
 
-    def _make_request(self):
+    def _make_request(self) -> dict:
         with open(self.filename, "rb") as f:
             self.arguments["files"] = {"file": f}
             response = super()._make_request()

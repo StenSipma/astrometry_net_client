@@ -1,12 +1,17 @@
+import logging
 import os
+from typing import Optional, cast
 
 from astrometry_net_client.config import login_url, read_api_key
 from astrometry_net_client.exceptions import (
     APIKeyError,
     InvalidRequest,
+    InvalidSessionError,
     LoginFailedException,
 )
-from astrometry_net_client.request import PostRequest
+from astrometry_net_client.request import PostRequest, Request
+
+log = logging.getLogger(__name__)
 
 
 class Session(object):
@@ -61,16 +66,18 @@ class Session(object):
         When no API key is specified (see examples)
     """
 
-    url = login_url
+    url: str = login_url
 
-    def __init__(self, api_key: str = None, key_location: str = None):
+    def __init__(
+        self, api_key: Optional[str] = None, key_location: Optional[str] = None
+    ):
         if api_key is not None:
             self.api_key = api_key.strip()
         elif key_location is not None:
             self.api_key = read_api_key(key_location)
         else:
-            self.api_key = os.environ.get("ASTROMETRY_API_KEY")
-            if self.api_key is None:
+            env_key = os.environ.get("ASTROMETRY_API_KEY")
+            if env_key is None:
                 raise APIKeyError(
                     "No api key found or given. "
                     "Specify an API key using one of: "
@@ -78,9 +85,11 @@ class Session(object):
                     "2. A location of a file containing the key, "
                     "3. An environment variable named ASTROMETRY_API_KEY."
                 )
+            self.api_key = cast(str, env_key)
+
         self.logged_in = False
 
-    def login(self, force: bool = False):
+    def login(self, force: bool = False) -> None:
         """
         Method used to log-in or start a session with the Astrometry.net API.
 
@@ -106,9 +115,42 @@ class Session(object):
 
         r = PostRequest(self.url, data={"apikey": self.api_key})
         try:
-            response = r.make()
+            response = cast(dict, r.make())
         except InvalidRequest:
             raise LoginFailedException("The api key given is not valid")
 
-        self.key = response["session"]
+        self.key: str = response["session"]
         self.logged_in = True
+
+
+class SessionRequest(Request):
+    """
+    Wraps the normal Request around an authentication layout, ensuring the
+    user is logged in and the session key is send alongside the request.
+
+    The separate login request (if needed) is only send just before the
+    original request is made, (e.g. when calling make / _make_request).
+
+    Attributes
+    ----------
+    session: :py:class:`Session`
+    """
+
+    def __init__(self, session: Session, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = session
+
+    def _make_request(self) -> dict:
+        self.session.login()
+        self.data["session"] = self.session.key
+        try:
+            # A login request will always return a dictionary
+            return cast(dict, super()._make_request())
+        except InvalidSessionError:
+            log.info("Session expired, loggin in again")
+            self.session.login(force=True)
+            # update the session key for the request as well
+            self.data["session"] = self.session.key
+
+        # A login request will always return a dictionary
+        return cast(dict, super()._make_request())

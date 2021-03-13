@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Union, cast
 
 import requests
 from astropy.io import fits
@@ -10,6 +11,7 @@ from astrometry_net_client.exceptions import (
     NoSessionError,
     UnkownContentError,
 )
+from astrometry_net_client.settings import Settings
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +59,12 @@ class Request(object):
     _raw_content_types = {"application/fits", "image/jpeg", "image/png"}
 
     def __init__(
-        self, url=None, method="get", data=None, settings=None, **kwargs
+        self,
+        url: str = None,
+        method: str = "get",
+        data: dict = None,
+        settings: Settings = None,
+        **kwargs
     ):
         self.data = {} if data is None else data.copy()
         self.settings = {} if settings is None else settings.copy()
@@ -73,9 +80,7 @@ class Request(object):
             err_msg = "Method argument must be one of {}"
             raise ValueError(err_msg.format(self._allowed_methods))
 
-        self.response = None
-
-    def _make_request(self):
+    def _make_request(self) -> Union[dict, bytes]:
         payload = {"request-json": json.dumps({**self.data, **self.settings})}
 
         log.debug("Sending {!r} with payload {}".format(self, payload))
@@ -95,7 +100,7 @@ class Request(object):
             response = response.json()
             self.response = response
 
-            # TODO add complete response checking
+            # TODO: add complete response checking
             if response.get("status", "") == "error":
                 err_msg = response["errormessage"]
                 if err_msg == 'no "session" in JSON.':
@@ -119,7 +124,7 @@ class Request(object):
 
         return self.response
 
-    def make(self):
+    def make(self) -> Union[dict, bytes]:
         """
         Send the actual request to the API.
         returns the response
@@ -130,7 +135,7 @@ class Request(object):
         Returns
         -------
         response
-            Type depends on the request which is being send. Can be a ``dic``
+            Type depends on the request which is being send. Can be a ``dict``
             but also a binary file (e.g. when expecting a filts file).
         """
         return self._make_request()
@@ -161,38 +166,7 @@ class PostRequest(Request):
         super().__init__(*args, method="post", **kwargs)
 
 
-class AuthorizedRequest(Request):
-    """
-    Wraps the normal Request around an authentication layout, ensuring the
-    user is logged in and the session key is send alongside the request.
-
-    The separate login request (if needed) is only send just before the
-    original request is made, (e.g. when calling make / _make_request).
-
-    Attributes
-    ----------
-    session: :py:class:`Session`
-    """
-
-    def __init__(self, session, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.session = session
-
-    def _make_request(self):
-        self.session.login()
-        self.data["session"] = self.session.key
-        try:
-            return super()._make_request()
-        except InvalidSessionError:
-            log.info("Session expired, loggin in again")
-            self.session.login(force=True)
-            # update the session key for the request as well
-            self.data["session"] = self.session.key
-
-        return super()._make_request()
-
-
-def file_request(url):
+def file_request(url: str) -> bytes:
     """
     Utility function which makes a request to ``url`` and gets a file in
     response.
@@ -208,10 +182,10 @@ def file_request(url):
     """
     r = Request(url)
     binary_file = r.make()
-    return binary_file
+    return cast(bytes, binary_file)
 
 
-def fits_file_request(url):
+def fits_file_request(url: str) -> fits.HDUList:
     """
     Make request to ``url`` and return a FITS file.
 

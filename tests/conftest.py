@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 
 import pytest
@@ -22,7 +24,7 @@ from astrometry_net_client import Job, Submission
 
 
 class MockGetRequest:
-    _response = {}
+    _response: dict[str, str] = {}
     headers = {"Content-Type": "text/plain"}
 
     def __init__(self, content=None, headers=None, status_code=200):
