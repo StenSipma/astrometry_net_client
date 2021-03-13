@@ -80,8 +80,6 @@ class Request(object):
             err_msg = "Method argument must be one of {}"
             raise ValueError(err_msg.format(self._allowed_methods))
 
-        self.response = None
-
     def _make_request(self) -> Union[dict, bytes]:
         payload = {"request-json": json.dumps({**self.data, **self.settings})}
 

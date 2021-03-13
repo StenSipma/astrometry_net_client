@@ -76,8 +76,8 @@ class Session(object):
         elif key_location is not None:
             self.api_key = read_api_key(key_location)
         else:
-            self.api_key = os.environ.get("ASTROMETRY_API_KEY")
-            if self.api_key is None:
+            env_key = os.environ.get("ASTROMETRY_API_KEY")
+            if env_key is None:
                 raise APIKeyError(
                     "No api key found or given. "
                     "Specify an API key using one of: "
@@ -85,6 +85,8 @@ class Session(object):
                     "2. A location of a file containing the key, "
                     "3. An environment variable named ASTROMETRY_API_KEY."
                 )
+            self.api_key = cast(str, env_key)
+
         self.logged_in = False
 
     def login(self, force: bool = False) -> None:

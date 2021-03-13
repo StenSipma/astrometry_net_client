@@ -1,4 +1,5 @@
 import abc
+from typing import Union, cast
 
 from astrometry_net_client.config import upload_url
 from astrometry_net_client.request import PostRequest
@@ -20,7 +21,7 @@ class Submitter(abc.ABC):
     """
 
     @abc.abstractmethod
-    def make(self) -> dict:
+    def make(self) -> Union[dict, bytes]:
         pass
 
     def submit(self) -> Submission:
@@ -34,7 +35,7 @@ class Submitter(abc.ABC):
             The submission which is created by the API. Use this to get the
             status & result(s) of your upload.
         """
-        response = self.make()
+        response = cast(dict, self.make())
         return Submission(response["subid"])
 
 
