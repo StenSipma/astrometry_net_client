@@ -1,4 +1,3 @@
-# Contains tests specific to Jobs
 import pytest
 import requests
 from utils import function_called_raiser
