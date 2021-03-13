@@ -39,7 +39,7 @@ def test_mocked_job_status_success(mock_server, monkeypatch):
     assert info["status"] == "success"
 
     for key in info.keys():
-        print(f"{key=}")
+        print(f"key = {key}")
         assert hasattr(job, key)
         if key != "status":
             assert getattr(job, key) == info[key]
@@ -74,7 +74,7 @@ def test_mocked_job_status_failure(mock_server):
     assert info["status"] == "failure"
 
     for key in info.keys():
-        print(f"{key=}")
+        print(f"{key}")
         assert hasattr(job, key)
         if key != "status":
             assert getattr(job, key) == info[key]

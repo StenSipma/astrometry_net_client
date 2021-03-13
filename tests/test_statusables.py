@@ -46,14 +46,14 @@ def test_submission_response(sid, result):
     assert response == ud_response
 
     for key in result.keys():
-        print(f"{key=}")
+        print(f"key = {key}")
         assert hasattr(submission, key)
         if key != "jobs":
             assert getattr(submission, key) == result[key]
 
     # test iteration is done properly
     for j1, j2 in zip(submission, submission.jobs):
-        print(f"{j1=}, {j2=}")
+        print(f"j1 = {j1}, j2 = {j2}")
         assert j1 == j2
 
     # test if job ids correspond correctly
@@ -94,14 +94,14 @@ def test_submission(sid, success, result, mock_server):
     assert response == ud_response
 
     for key in result.keys():
-        print(f"{key=}")
+        print(f"key = {key}")
         assert hasattr(submission, key)
         if key != "jobs":
             assert getattr(submission, key) == result[key]
 
     # test iteration is done properly
     for j1, j2 in zip(submission, submission.jobs):
-        print(f"{j1=}, {j2=}")
+        print(f"j1= {j1}, j2 = {j2}")
         assert j1 == j2
 
     # test if job ids correspond correctly
