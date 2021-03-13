@@ -9,21 +9,14 @@ from typing import Callable, NamedTuple, Optional
 # TODO idea, read settings from some file for persistent use.
 
 # TODO use the same format as the astroquery constraints
+
+
 class Setting(NamedTuple):
     name: str
     type: Callable
     verify_func: Optional[Callable] = None
     verify_mesg: Optional[str] = None
 
-
-# Setting = namedtuple(
-#     "Setting",
-#     "name type verify_func verify_mesg",
-#     defaults=(
-#         None,
-#         None,
-#     ),
-# )
 
 _allowed_settings = {
     Setting(
