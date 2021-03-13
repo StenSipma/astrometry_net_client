@@ -1,7 +1,8 @@
 import abc
 
 from astrometry_net_client.config import upload_url
-from astrometry_net_client.request import AuthorizedRequest, PostRequest
+from astrometry_net_client.request import PostRequest
+from astrometry_net_client.session import SessionRequest
 from astrometry_net_client.statusables import Submission
 
 
@@ -22,7 +23,7 @@ class Submitter(abc.ABC):
     def _make_request(self):
         pass
 
-    def submit(self):
+    def submit(self) -> Submission:
         """
         Submit function, similar to ``make`` but in addition creates and
         returns the resulting submission.
@@ -37,7 +38,7 @@ class Submitter(abc.ABC):
         return Submission(response["subid"])
 
 
-class BaseUpload(AuthorizedRequest, PostRequest, Submitter):
+class BaseUpload(SessionRequest, PostRequest, Submitter):
     """
     Extends from:
 

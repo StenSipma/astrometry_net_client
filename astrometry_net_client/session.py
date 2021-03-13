@@ -1,12 +1,18 @@
 import os
+import logging
+
+from typing import cast
 
 from astrometry_net_client.config import login_url, read_api_key
 from astrometry_net_client.exceptions import (
     APIKeyError,
     InvalidRequest,
     LoginFailedException,
+    InvalidSessionError,
 )
-from astrometry_net_client.request import PostRequest
+from astrometry_net_client.request import PostRequest, Request
+
+log = logging.getLogger(__name__)
 
 
 class Session(object):
@@ -112,3 +118,36 @@ class Session(object):
 
         self.key = response["session"]
         self.logged_in = True
+
+
+class SessionRequest(Request):
+    """
+    Wraps the normal Request around an authentication layout, ensuring the
+    user is logged in and the session key is send alongside the request.
+
+    The separate login request (if needed) is only send just before the
+    original request is made, (e.g. when calling make / _make_request).
+
+    Attributes
+    ----------
+    session: :py:class:`Session`
+    """
+
+    def __init__(self, session: Session, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = session
+
+    def _make_request(self) -> dict:
+        self.session.login()
+        self.data["session"] = self.session.key
+        try:
+            # A login request will always return a dictionary
+            return cast(dict, super()._make_request())
+        except InvalidSessionError:
+            log.info("Session expired, loggin in again")
+            self.session.login(force=True)
+            # update the session key for the request as well
+            self.data["session"] = self.session.key
+
+        # A login request will always return a dictionary
+        return cast(dict, super()._make_request())

@@ -1,5 +1,6 @@
 import numbers
-from collections import UserDict, namedtuple
+from collections import UserDict
+from typing import NamedTuple, Callable, Optional
 
 # TODO idea, replace the settings with descriptors ?
 # TODO  e.g. an angle descriptor, which can handle astropy units
@@ -8,9 +9,21 @@ from collections import UserDict, namedtuple
 # TODO idea, read settings from some file for persistent use.
 
 # TODO use the same format as the astroquery constraints
-Setting = namedtuple(
-    "Setting", "name type verify_func verify_mesg", defaults=(None, None,)
-)
+class Setting(NamedTuple):
+    name: str
+    type: Callable
+    verify_func: Optional[Callable] = None
+    verify_mesg: Optional[str] = None
+
+
+# Setting = namedtuple(
+#     "Setting",
+#     "name type verify_func verify_mesg",
+#     defaults=(
+#         None,
+#         None,
+#     ),
+# )
 
 _allowed_settings = {
     Setting(
