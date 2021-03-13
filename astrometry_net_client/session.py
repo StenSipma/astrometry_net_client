@@ -1,7 +1,7 @@
 import os
 import logging
 
-from typing import cast
+from typing import cast, Optional
 
 from astrometry_net_client.config import login_url, read_api_key
 from astrometry_net_client.exceptions import (
@@ -67,9 +67,11 @@ class Session(object):
         When no API key is specified (see examples)
     """
 
-    url = login_url
+    url: str = login_url
 
-    def __init__(self, api_key: str = None, key_location: str = None):
+    def __init__(
+        self, api_key: Optional[str] = None, key_location: Optional[str] = None
+    ):
         if api_key is not None:
             self.api_key = api_key.strip()
         elif key_location is not None:
@@ -86,7 +88,7 @@ class Session(object):
                 )
         self.logged_in = False
 
-    def login(self, force: bool = False):
+    def login(self, force: bool = False) -> None:
         """
         Method used to log-in or start a session with the Astrometry.net API.
 
@@ -112,11 +114,11 @@ class Session(object):
 
         r = PostRequest(self.url, data={"apikey": self.api_key})
         try:
-            response = r.make()
+            response = cast(dict, r.make())
         except InvalidRequest:
             raise LoginFailedException("The api key given is not valid")
 
-        self.key = response["session"]
+        self.key: str = response["session"]
         self.logged_in = True
 
 

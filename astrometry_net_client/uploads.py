@@ -20,7 +20,7 @@ class Submitter(abc.ABC):
     """
 
     @abc.abstractmethod
-    def _make_request(self):
+    def make(self) -> dict:
         pass
 
     def submit(self) -> Submission:
@@ -89,15 +89,15 @@ class FileUpload(BaseUpload):
         The submission object, which is created when you upload a file.
     """
 
-    url = upload_url
+    url: str = upload_url
 
-    def __init__(self, filename, *args, **kwargs):
+    def __init__(self, filename: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # TODO check if file exists?
         # TODO check if file has the correct type
         self.filename = filename
 
-    def _make_request(self):
+    def _make_request(self) -> dict:
         with open(self.filename, "rb") as f:
             self.arguments["files"] = {"file": f}
             response = super()._make_request()
