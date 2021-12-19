@@ -45,10 +45,10 @@ Using this package, these steps are (note that this is not the ideal way to uplo
         wcs = job.wcs_file()                      # 5. (only if successful)
     print(job.info())                             # works even though the job failed
 
-Or with the higher level ``Client``:
+Or with the higher level ``Client`` :
 
 .. code:: python
-   :line-numbers:
+   :number-lines:
    
     from astrometry_net_client import Client
 
