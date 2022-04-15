@@ -1,7 +1,7 @@
 aiohttp==3.7.4
 alabaster==0.7.12
 appdirs==1.4.4
-astropy==5.0.4
+astropy==4.2
 astropy-sphinx-theme==1.1
 async-timeout==3.0.1
 attrs==20.3.0
@@ -11,7 +11,6 @@ bleach==3.3.0
 certifi==2020.12.5
 cffi==1.14.4
 chardet==3.0.4
-charset-normalizer==2.0.12
 click==7.1.2
 colorama==0.4.4
 coverage==5.4
@@ -43,17 +42,16 @@ pluggy==0.13.1
 py==1.10.0
 pycodestyle==2.6.0
 pycparser==2.20
-pyerfa==2.0.0.1
+pyerfa==1.7.1.1
 pyflakes==2.2.0
 Pygments==2.7.4
 pyparsing==2.4.7
-pytest==7.1.1
+pytest==6.2.2
 pytest-cov==2.11.1
 pytz==2021.1
-PyYAML==6.0
 readme-renderer==28.0
 regex==2020.11.13
-requests==2.27.1
+requests==2.25.1
 requests-toolbelt==0.9.1
 rfc3986==1.4.0
 SecretStorage==3.3.0
