@@ -135,3 +135,6 @@ dmypy.json
 
 # File for the key API key
 key
+
+# Ignore general backup files
+*.bak
