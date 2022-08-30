@@ -1,6 +1,6 @@
 PY=python3
 PIP=pip
-TEST=pytest
+TEST=python3 -m pytest
 
 # Override this variable (or any other) by using the --environment option:
 #  $ PY_VERSION=3.8 make --environment type-check
