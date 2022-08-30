@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../astrometry_net_client"))
 # -- Project information -----------------------------------------------------
 
 project = "Astrometry.net Client"
-copyright = "2020, Sten Sipma"
+copyright = "2022, Sten Sipma"
 author = "Sten Sipma"
 
 
