@@ -106,12 +106,6 @@ Then build & install the package with (does not install development dependencies
 
 .. code:: bash
 
-        make quick-install
-
-If you also want to install the dependencies required for development, use:
-
-.. code:: bash
-
         make install
 
 Documentation

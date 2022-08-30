@@ -1,0 +1,17 @@
+-c requirements.txt
+
+black
+
+flake8
+darglint
+
+isort
+
+pytest
+pytest-cov
+
+mypy
+types-requests
+
+Sphinx
+astropy-sphinx-theme
