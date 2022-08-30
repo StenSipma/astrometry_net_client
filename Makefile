@@ -1,10 +1,10 @@
 PY=python3
 PIP=pip
-TEST=pytest
+TEST=python3 -m pytest
 
 # Override this variable (or any other) by using the --environment option:
 #  $ PY_VERSION=3.8 make --environment type-check
-PY_VERSION=3.9
+PY_VERSION=3.10
 
 PROJECT_NAME=astrometry_net_client
 
@@ -16,7 +16,7 @@ PY_FILES=$(PROJ_FILES) $(TEST_FILES) $(EXAMPLE_FILES) $(CONFIG_FILES)
 
 # Add the following options for a testresults JUnit like xml report
 #-o junit_family=xunit2 --junitxml="testresults.xml"
-TEST_ARGS=--cov --cov=$(PROJECT_NAME) --cov-report html -v
+TEST_ARGS=--cov=$(PROJECT_NAME) --cov-report html -v
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
@@ -24,16 +24,17 @@ FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503,DAR402
 
 PIP_IGNORE_PKG=--exclude pynvim --exclude astrometry_net_client
 
-default: check-in-venv format lint type-check install ## perform formatting and install
+default: help
 
-all: default test documentation ## perform all checks, including formatting and testing
+#default: check-in-venv dependencies format lint type-check install ## perform formatting and install
+
+all: check-in-venv dependencies format lint type-check install test documentation ## perform all checks, including formatting and testing
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install: dependencies package package-install  ## package and install, with installing dependencies
-quick-install: package package-install  ## Repackage and install without reinstalling dependencies
+install: package package-install  ## package and install
 
 package-install: 
 	$(PIP) install dist/$(PROJECT_NAME)-*.tar.gz
@@ -50,12 +51,19 @@ upload-test: package
 
 # Dependencies for the development environment, 
 # e.g. contains Sphinx, flake8, black, isort etc.
-dependencies:
-	$(PIP) install --upgrade pip setuptools wheel
+dependencies: deps-general deps-dev ## Download development dependencies
+
+deps-general:
+	$(PIP) install --upgrade pip setuptools wheel pip-tools
+
+deps-package:
 	$(PIP) install --upgrade -r requirements.txt
 
-# Generate the documentation
-documentation:
+deps-dev:
+	$(PIP) install --upgrade -r requirements.dev.txt
+
+
+documentation: ## Generate the documentation
 	make --directory=docs/ html
 
 
@@ -82,7 +90,7 @@ format: ## Format all the files using black and isort
 	black $(BLACK_ARGS) $(PY_FILES)
 	isort $(ISORT_ARGS) $(PY_FILES)
 
-check-format:
+check-format: ## Only check if the formatting is correct
 	black --check $(BLACK_ARGS) $(PY_FILES)
 	isort --check-only $(ISORT_ARGS) $(PY_FILES)
 
@@ -94,7 +102,7 @@ type-check: ## Check Type annotations using MyPy
 
 
 ## Cleanup rules
-clean: clean-package clean-docs clean-reports  ## Cleanup
+clean: clean-package clean-docs clean-reports  ## Cleanup all build files (like package, test results, documentation)
 
 clean-package:
 	-rm -r *.egg-info 
@@ -110,8 +118,13 @@ clean-reports:
 	-rm testresults.xml
 
 ## Misc rules
-virt-env:
+virt-env:  ## Make a virtual environment
 	python3 -m venv .env
+
+deps-compile: setup.py requirements.dev.in  ## Run pip-compile
+	pip-compile
+	pip-compile requirements.dev.in
+
 
 pip-freeze: ## Update requirements.txt and make a backup (for safety) of the current one
 	mv requirements.txt requirements.txt.bak
