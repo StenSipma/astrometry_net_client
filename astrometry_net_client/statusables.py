@@ -216,7 +216,9 @@ class Statusable(abc.ABC):
         start_time = now()
 
         sleep_time = start
-        log_msg = "Starting the until done loop with: sleep_time = {}, timeout = {}"
+        log_msg = (
+            "Starting the until done loop with: sleep_time = {}, timeout = {}"
+        )
         log.debug(log_msg.format(sleep_time, timeout))
         while timeout is None or now() - start_time < timeout:
             response = self.status()
@@ -331,7 +333,9 @@ class Submission(Statusable):
         self.images = response["images"]
         self.job_calibrations = response["job_calibrations"]
 
-        self.jobs = [Job(job_id) for job_id in response["jobs"] if job_id is not None]
+        self.jobs = [
+            Job(job_id) for job_id in response["jobs"] if job_id is not None
+        ]
 
         for job in self.jobs:
             job.status()
@@ -417,7 +421,9 @@ class Job(Statusable):
     rdls_file_url = "http://nova.astrometry.net/rdls_file/{job.id}"
     axy_file_url = "http://nova.astrometry.net/axy_file/{job.id}"
     corr_file_url = "http://nova.astrometry.net/corr_file/{job.id}"
-    annotated_display_url = "http://nova.astrometry.net/annotated_display/{job.id}"
+    annotated_display_url = (
+        "http://nova.astrometry.net/annotated_display/{job.id}"
+    )
     red_green_image_display_url = (
         "http://nova.astrometry.net/red_green_image_display/{job.id}"
     )
