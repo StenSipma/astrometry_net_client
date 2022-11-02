@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Union, cast
+from typing import Optional, Union, cast
 
 import requests
 from astropy.io import fits
@@ -60,10 +60,10 @@ class Request(object):
 
     def __init__(
         self,
-        url: str = None,
+        url: Optional[str] = None,
         method: str = "get",
-        data: dict = None,
-        settings: Settings = None,
+        data: Optional[dict] = None,
+        settings: Optional[Settings] = None,
         **kwargs
     ):
         self.data = {} if data is None else data.copy()
@@ -81,7 +81,10 @@ class Request(object):
             raise ValueError(err_msg.format(self._allowed_methods))
 
     def _make_request(self) -> Union[dict, bytes]:
-        payload = {"request-json": json.dumps({**self.data, **self.settings})}
+        if len(self.data) + len(self.settings) > 0:
+            payload = {"request-json": json.dumps({**self.data, **self.settings})}
+        else:
+            payload = None
 
         log.debug("Sending {!r} with payload {}".format(self, payload))
         response = self.method(self.url, data=payload, **self.arguments)
