@@ -29,13 +29,13 @@ default: help
 
 #default: check-in-venv dependencies format lint type-check install ## perform formatting and install
 
-all: check-in-venv dependencies format lint type-check install test documentation ## perform all checks, including formatting and testing
+all: check-in-venv deps-package deps-dev format lint type-check install test documentation ## perform all checks, including formatting and testing
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install: package package-install  ## package and install
+install: deps-package package package-install  ## package and install
 
 package-install:
 	$(PIP) install dist/$(PROJECT_NAME)-*.tar.gz
@@ -50,17 +50,15 @@ upload-pypi: package
 upload-test: package
 	python3 -m twine upload --repository testpypi dist/*
 
-# Dependencies for the development environment,
-# e.g. contains Sphinx, flake8, black, isort etc.
-dependencies: deps-general deps-dev ## Download development dependencies
-
 deps-general:
 	$(PIP) install --upgrade pip setuptools wheel pip-tools
 
-deps-package:
+deps-package: deps-general
 	$(PIP) install --upgrade -r requirements.txt
 
-deps-dev:
+# Dependencies for the development environment,
+# e.g. contains Sphinx, flake8, black, isort etc.
+deps-dev: deps-general ## Download development dependencies
 	$(PIP) install --upgrade -r requirements.dev.txt
 
 
