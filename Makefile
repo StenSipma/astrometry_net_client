@@ -11,12 +11,13 @@ PROJECT_NAME=astrometry_net_client
 PROJ_FILES=$(PROJECT_NAME)/*.py
 TEST_FILES=tests/*.py
 EXAMPLE_FILES=examples/*.py
-CONFIG_FILES=setup.py 
+CONFIG_FILES=setup.py
 PY_FILES=$(PROJ_FILES) $(TEST_FILES) $(EXAMPLE_FILES) $(CONFIG_FILES)
 
+TEST_FILTER=
 # Add the following options for a testresults JUnit like xml report
 #-o junit_family=xunit2 --junitxml="testresults.xml"
-TEST_ARGS=--cov=$(PROJECT_NAME) --cov-report html -v
+TEST_ARGS=--cov=$(PROJECT_NAME) --cov-report html -v -k '$(TEST_FILTER)'
 
 BLACK_ARGS=-l 79
 ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
@@ -28,18 +29,18 @@ default: help
 
 #default: check-in-venv dependencies format lint type-check install ## perform formatting and install
 
-all: check-in-venv dependencies format lint type-check install test documentation ## perform all checks, including formatting and testing
+all: check-in-venv deps-package deps-dev format lint type-check install test documentation ## perform all checks, including formatting and testing
 
 check-in-venv:
 	env | grep 'VIRTUAL_ENV'
 
 # Packaging
-install: package package-install  ## package and install
+install: deps-package package package-install  ## package and install
 
-package-install: 
+package-install:
 	$(PIP) install dist/$(PROJECT_NAME)-*.tar.gz
 
-package: 
+package:
 	$(PY) setup.py sdist bdist_wheel
 
 # Uploading
@@ -49,17 +50,17 @@ upload-pypi: package
 upload-test: package
 	python3 -m twine upload --repository testpypi dist/*
 
-# Dependencies for the development environment, 
-# e.g. contains Sphinx, flake8, black, isort etc.
-dependencies: deps-general deps-dev ## Download development dependencies
+dependencies: deps-package deps-dev
 
 deps-general:
 	$(PIP) install --upgrade pip setuptools wheel pip-tools
 
-deps-package:
+deps-package: deps-general
 	$(PIP) install --upgrade -r requirements.txt
 
-deps-dev:
+# Dependencies for the development environment,
+# e.g. contains Sphinx, flake8, black, isort etc.
+deps-dev: deps-general ## Download development dependencies
 	$(PIP) install --upgrade -r requirements.dev.txt
 
 
@@ -105,8 +106,8 @@ type-check: ## Check Type annotations using MyPy
 clean: clean-package clean-docs clean-reports  ## Cleanup all build files (like package, test results, documentation)
 
 clean-package:
-	-rm -r *.egg-info 
-	-rm -r build 
+	-rm -r *.egg-info
+	-rm -r build
 	-rm -r dist
 
 clean-docs:

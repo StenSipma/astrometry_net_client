@@ -66,7 +66,7 @@ markupsafe==2.1.1
     # via jinja2
 mccabe==0.7.0
     # via flake8
-mypy==0.971
+mypy==0.982
     # via -r requirements.dev.in
 mypy-extensions==0.4.3
     # via
