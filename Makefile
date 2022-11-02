@@ -50,6 +50,8 @@ upload-pypi: package
 upload-test: package
 	python3 -m twine upload --repository testpypi dist/*
 
+dependencies: deps-package deps-dev
+
 deps-general:
 	$(PIP) install --upgrade pip setuptools wheel pip-tools
 
