@@ -122,9 +122,9 @@ clean-reports:
 virt-env:  ## Make a virtual environment
 	python3 -m venv .env
 
-deps-compile: setup.py requirements.dev.in  ## Run pip-compile
-	pip-compile
-	pip-compile requirements.dev.in
+deps-upgrade: setup.py requirements.dev.in  ## Run pip-compile
+	pip-compile --upgrade
+	pip-compile requirements.dev.in --upgrade
 
 
 pip-freeze: ## Update requirements.txt and make a backup (for safety) of the current one
