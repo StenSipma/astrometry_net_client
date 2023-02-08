@@ -32,7 +32,7 @@ commonmark==0.9.1
     # via rich
 coverage[toml]==6.5.0
     # via pytest-cov
-cryptography==38.0.3
+cryptography==39.0.1
     # via secretstorage
 darglint==1.8.1
     # via -r requirements.dev.in
@@ -40,8 +40,6 @@ docutils==0.19
     # via
     #   readme-renderer
     #   sphinx
-exceptiongroup==1.0.4
-    # via pytest
 flake8==5.0.4
     # via -r requirements.dev.in
 idna==3.4
@@ -150,12 +148,6 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-tomli==2.0.1
-    # via
-    #   black
-    #   coverage
-    #   mypy
-    #   pytest
 twine==4.0.1
     # via -r requirements.dev.in
 types-requests==2.28.11.5
