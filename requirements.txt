@@ -24,7 +24,7 @@ pyparsing==3.0.9
     # via packaging
 pyyaml==6.0
     # via astropy
-requests==2.28.1
+requests==2.31.0
     # via astrometry-net-client (setup.py)
 urllib3==1.26.12
     # via requests
