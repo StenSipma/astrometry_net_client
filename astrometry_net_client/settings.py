@@ -168,8 +168,8 @@ class Settings(UserDict):
         unit is defined by the ``unit`` parameter, which defaults to
         ``'arcminwidth'``.
 
-        Do not set the range too small, otherwise Astrometry might not be able to solve
-        your upload.
+        Do not set the range too small, otherwise Astrometry might not be able
+        to solve your upload.
 
         Incompatible with :py:func:`set_scale_estimate`
 
@@ -210,8 +210,8 @@ class Settings(UserDict):
         is the central value, and the error (given in percent) specifies the
         deviation around this value.
 
-        Do not set the error too low, otherwise Astrometry might not be able to solve
-        your upload.
+        Do not set the error too low, otherwise Astrometry might not be able to
+        solve your upload.
 
         Incompatible with :py:func:`set_scale_range`
 
