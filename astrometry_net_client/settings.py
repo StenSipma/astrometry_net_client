@@ -161,11 +161,15 @@ class Settings(UserDict):
 
     def set_scale_range(self, lower, upper, unit="arcminwidth"):
         """
-        Specify the size of your field using a range.
+        Specify the size of your field (units 'arcminwidth' or 'degwitdth') or
+        the plate scale (unit 'arcsecperpix') using a range.
 
         Set the upper and lower limits for the field size of your upload. The
         unit is defined by the ``unit`` parameter, which defaults to
         ``'arcminwidth'``.
+
+        Do not set the range too small, otherwise Astrometry might not be able to solve
+        your upload.
 
         Incompatible with :py:func:`set_scale_estimate`
 
@@ -202,8 +206,12 @@ class Settings(UserDict):
         """
         Specify the size of your field using an estimate + a deviation (error)
 
-        Sets the size of your field by an estimate + error pair. Will result in
-        a range of (estimate - error, estimate + error).
+        Sets the size of your field by an estimate + error pair. The estimate
+        is the central value, and the error (given in percent) specifies the
+        deviation around this value.
+
+        Do not set the error too low, otherwise Astrometry might not be able to solve
+        your upload.
 
         Incompatible with :py:func:`set_scale_range`
 
