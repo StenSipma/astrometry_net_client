@@ -48,7 +48,7 @@ def test_old():
 
     # TODO include some test data in the repository
     upl = FileUpload(
-        "../test-data/target.200417.00000088.3x3.FR.fits", session=session
+        "../test/data/target.200417.00000088.3x3.FR.fits", session=session
     )
 
     submission = upl.submit()
