@@ -46,13 +46,6 @@ def test_client_settings(mock_server):
     assert client.settings == client2.settings
 
 
-def test_client_upload_filter(mock_server):
-    client = Client(api_key=VALID_KEY)
-
-    job = client.filtered_upload_wrapper(FILE, filter_func=lambda x: False)
-    assert job is None
-
-
 @pytest.mark.long
 def test_client_upload(mock_server):
     client = Client(api_key=VALID_KEY)
@@ -61,17 +54,11 @@ def test_client_upload(mock_server):
     assert job.success()
     assert job.done()
 
-    # should be normal
-    job = client.filtered_upload_wrapper(FILE)
-    assert job is not None
-    assert job.success()
-    assert job.done()
-
 
 @pytest.mark.long
 def test_client_upload_multiple(mock_server):
     client = Client(api_key=VALID_KEY)
-    jobs = client.upload_files_gen([FILE] * 5, workers=3)
+    jobs = client.upload_files_gen([FILE] * 5, queue_size=3)
 
     assert jobs is not None
 

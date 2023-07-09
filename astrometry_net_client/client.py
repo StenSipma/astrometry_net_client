@@ -1,6 +1,6 @@
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
 
 from astrometry_net_client.session import Session
 from astrometry_net_client.settings import Settings
@@ -62,9 +62,7 @@ class Client:
     def upload_files_gen(
         self,
         files_iter,
-        filter_func=None,
-        filter_args=None,
-        workers=MAX_WORKERS,
+        queue_size=MAX_WORKERS,
     ):
         """
         Generator which uploads a number of files concurrently, yielding the
@@ -79,15 +77,11 @@ class Client:
         files_iter: iterable
             Some iterable containing paths to the files which will be uploaded.
             Is fully consumed before any result is yielded.
-        workers: int, optional
-            A positive integer, controlling the amount of workers to use for
-            the processing. Will not exceed the value of
+        queue_size: int, optional
+            A positive integer, controlling the size of the queue. This will
+            determine the maximum number of simultaneous submissions. Must be
+            greater than 0 and lower than :py:const:`MAX_WORKERS`. Default is
             :py:const:`MAX_WORKERS`.
-        filter_func: Callable
-            Predicate filter function which takes in the `filename` and
-            optionally some argument (`filter_args`).
-        filter_args: List
-            Arguments which are to be passed to the filter function.
 
         Yields
         ------
@@ -97,75 +91,80 @@ class Client:
             corresponding filename. Yields when the Job is finished.
             NOTE: Order of yielded filenames can (and likely will) be different
             from the given ``files_iter``
+
+        Raises
+        ------
+        ValueError
+            When the queue_size is invalid.
         """
-        workers = min(MAX_WORKERS, workers)
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            log.info("Spawned executor {}".format(executor))
+        SLEEP_TIME = 0.3  # seconds
 
-            # submit the files & save which future corresponds to which
-            #  filename
-            future_to_file = {
-                executor.submit(
-                    self.filtered_upload_wrapper,
-                    filename,
-                    filter_func=filter_func,
-                    filter_args=filter_args,
-                ): filename
-                for filename in files_iter
-            }
+        files_iter = iter(files_iter)
+        if queue_size < 1 or queue_size > MAX_WORKERS:
+            raise ValueError(
+                "queue_size must be greater than 0 and less or equal to ",
+                f"{MAX_WORKERS}, was: {queue_size}",
+            )
+        processing_queue = Queue(maxsize=queue_size)
 
-            # iterate over the results once they are completed.
-            for future in as_completed(future_to_file):
-                result_filename = future_to_file[future]
-                try:
-                    res_job = future.result()
-                except Exception as e:
-                    # This exception is thrown inside the computed function.
-                    err_msg = "File {} stopped with exception {}"
-                    log.error(err_msg.format(result_filename, e))
+        # Populate queue initially
+        for _, filename in zip(range(queue_size), files_iter):
+            self._insert_submission(filename, processing_queue)
+
+        while not processing_queue.empty():
+            filename, submission, job = processing_queue.get()
+            log_msg = "Checking file {}, job exists: {}"
+            log.debug(log_msg.format(filename, job is not None))
+            # The item in the queue has 2 states; if it is still only a
+            # submission job will be None and we have to create a job out of
+            # it. When the job is made, we can check if the job is done. When
+            # the job is finished return (yield) the value, otherwise put it
+            # back in the queue.
+
+            if job is None:
+                submission.status()
+                if submission.done():
+                    job = submission.jobs[0]
                 else:
-                    if res_job is not None:  # ignore if file was filtered out
-                        yield res_job, result_filename
+                    processing_queue.put((filename, submission, job))
+                    continue
 
-    def filtered_upload_wrapper(
-        self, filename, filter_func=None, filter_args=None, *args, **kwargs
-    ):
+            job.status()
+            if job.done():
+                try:
+                    filename = next(files_iter)
+                except StopIteration:
+                    pass
+                else:
+                    self._insert_submission(filename, processing_queue)
+                log_msg = "FINISHED submission {}, yielding..."
+                log.info(log_msg.format(filename))
+                yield (job, filename)
+            else:
+                processing_queue.put((filename, submission, job))
+
+            time.sleep(SLEEP_TIME)
+
+    def _insert_submission(self, filename, queue):
         """
-        Wrapper around :py:func:`upload_file` which filters the given file
-        based on a specified filter function.  Main use for this is a
-        computationally heavy filter function, like counting number of sources
-        locally, and only uploading if not enough are detected.
+        Helper function which creates an upload for the given filename, and
+        inserts the submission in a queue. This is not intended to be used
+        by a user.
 
         Parameters
         ----------
         filename: str
-            File to be uploaded. See :py:func:`upload_file`.
-        filter_func: Callable
-            Predicate filter function which takes in the `filename` and
-            optionally some argument (`filter_args`).
-        filter_args: List
-            Arguments which are to be passed to the filter function.
-        args: other arguments
-            Directly passed to :py:func:`upload_file`
-        kwargs: keyword arguments
-            Directly passed to :py:func:`upload_file`
-
-        Returns
-        -------
-        Job or None: :py:class:`astrometry_net_client.statusables.Job`, `None`
-            Will be the job of the resulting upload (see
-            :py:func:`upload_file`), or `None` when `filter_func` evaluated to
-            `False`.
+            The filename of the file to be submitted into the queue.
+        queue: Queue
+            The queue in which to insert the submission.
         """
-        if filter_args is None:
-            # allow arguments to be unpackable if it is not specified
-            filter_args = []
-
-        if filter_func is not None and not filter_func(filename, *filter_args):
-            log.info("Filter function failed, skipping upload")
-            return None
-
-        return self.upload_file(filename, *args, **kwargs)
+        log_msg = "Submitting file {}"
+        log.info(log_msg.format(filename))
+        upl = FileUpload(
+            filename, session=self.session, settings=self.settings
+        )
+        submission = upl.submit()
+        queue.put((filename, submission, None))
 
     def upload_file(self, filename, settings=None):
         """

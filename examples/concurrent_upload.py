@@ -5,7 +5,7 @@ from sys import argv
 
 from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
-from photutils import DAOStarFinder
+from photutils.detection import DAOStarFinder
 
 from astrometry_net_client import Client
 
@@ -98,12 +98,13 @@ def main():
 
     # iterate over all the fits files in the specified diretory
     fits_files = filter(is_fits, files)
+    fits_files = filter(
+        lambda f: enough_sources(f, min_sources=10), fits_files
+    )
 
     # give the iterable of filenames to the function, which returns a
     # generator, generating pairs containing the finished job and filename.
-    result_iter = c.upload_files_gen(
-        fits_files, filter_func=enough_sources, filter_args=(10,)
-    )
+    result_iter = c.upload_files_gen(fits_files)
 
     for job, filename in result_iter:
 
