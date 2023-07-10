@@ -28,9 +28,7 @@ def test_client_login(mock_server):
 
 
 def test_client_settings(mock_server):
-    settings = Settings(
-        use_sextractor=True, image_height=1000, image_width=2000
-    )
+    settings = Settings(use_sextractor=True, image_height=1000, image_width=2000)
     client = Client(settings=settings, api_key=VALID_KEY)
     client2 = Client(
         use_sextractor=True,

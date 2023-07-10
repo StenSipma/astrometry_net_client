@@ -47,9 +47,7 @@ def test_old():
     assert session.logged_in
 
     # TODO include some test data in the repository
-    upl = FileUpload(
-        "../test/data/target.200417.00000088.3x3.FR.fits", session=session
-    )
+    upl = FileUpload("../test/data/target.200417.00000088.3x3.FR.fits", session=session)
 
     submission = upl.submit()
     assert isinstance(submission, Submission)

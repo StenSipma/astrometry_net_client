@@ -82,9 +82,7 @@ class Request(object):
 
     def _make_request(self) -> Union[dict, bytes]:
         if len(self.data) + len(self.settings) > 0:
-            payload = {
-                "request-json": json.dumps({**self.data, **self.settings})
-            }
+            payload = {"request-json": json.dumps({**self.data, **self.settings})}
         else:
             payload = None
 

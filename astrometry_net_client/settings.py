@@ -31,9 +31,7 @@ _allowed_settings = {
         lambda x: x in {"d", "y", "n", "sa"},
         "Must be one of: d, y, n, sa",
     ),
-    Setting(
-        "publicly_visible", str, lambda x: x in {"y", "n"}, "Must be: y or n"
-    ),
+    Setting("publicly_visible", str, lambda x: x in {"y", "n"}, "Must be: y or n"),
     Setting(
         "scale_units",
         str,
