@@ -9,10 +9,7 @@ from photutils.detection import DAOStarFinder
 
 from astrometry_net_client import Client
 
-FMT = (
-    "[%(asctime)s] %(threadName)-8s %(levelname)-8s |"
-    " %(funcName)s - %(message)s"
-)
+FMT = "[%(asctime)s] %(threadName)-8s %(levelname)-8s |" " %(funcName)s - %(message)s"
 logging.basicConfig(level=logging.INFO, format=FMT)
 log = logging.getLogger(__name__)
 
@@ -85,8 +82,7 @@ def main():
     if len(argv) < 3:
         print("Usage:")
         print(
-            " $ python3 client.py [path/to/key/file] "
-            "[file1 file2 file3 ... fileN]"
+            " $ python3 client.py [path/to/key/file] " "[file1 file2 file3 ... fileN]"
         )
         exit(-1)
 
@@ -98,9 +94,7 @@ def main():
 
     # iterate over all the fits files in the specified diretory
     fits_files = filter(is_fits, files)
-    fits_files = filter(
-        lambda f: enough_sources(f, min_sources=10), fits_files
-    )
+    fits_files = filter(lambda f: enough_sources(f, min_sources=10), fits_files)
 
     # give the iterable of filenames to the function, which returns a
     # generator, generating pairs containing the finished job and filename.

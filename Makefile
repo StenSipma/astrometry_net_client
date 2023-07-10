@@ -4,7 +4,7 @@ TEST=python3 -m pytest
 
 # Override this variable (or any other) by using the --environment option:
 #  $ PY_VERSION=3.8 make --environment type-check
-PY_VERSION=3.10
+PY_VERSION=3.11
 
 PROJECT_NAME=astrometry_net_client
 
@@ -18,10 +18,6 @@ TEST_FILTER=
 # Add the following options for a testresults JUnit like xml report
 #-o junit_family=xunit2 --junitxml="testresults.xml"
 TEST_ARGS=--cov=$(PROJECT_NAME) --cov-report html -v -k '$(TEST_FILTER)'
-
-BLACK_ARGS=-l 79
-ISORT_ARGS=--multi-line=3 --trailing-comma --force-grid-wrap=0 --use-parentheses --line-width=79
-FLAKE_ARGS=--docstring-style=numpy --ignore=E203,W503,DAR402
 
 PIP_IGNORE_PKG=--exclude pynvim --exclude astrometry_net_client
 
@@ -88,15 +84,16 @@ git-pre-push: check-format lint
 
 ## Formatting and linting
 format: ## Format all the files using black and isort
-	black $(BLACK_ARGS) $(PY_FILES)
-	isort $(ISORT_ARGS) $(PY_FILES)
+	black $(PY_FILES)
+	isort $(PY_FILES)
 
 check-format: ## Only check if the formatting is correct
-	black --check $(BLACK_ARGS) $(PY_FILES)
-	isort --check-only $(ISORT_ARGS) $(PY_FILES)
+	# TODO: change this
+	black --check $(PY_FILES)
+	isort --check-only $(PY_FILES)
 
 lint: ## Check the linting of all files
-	flake8 $(FLAKE_ARGS) $(PY_FILES)
+	flake8 $(PY_FILES)
 
 type-check: ## Check Type annotations using MyPy
 	mypy --python-version=$(PY_VERSION) $(PROJ_FILES) $(TEST_FILES) $(EXAMPLE_FILES)

@@ -56,8 +56,7 @@ def main():
     if len(argv) < 3:
         print("Usage:")
         print(
-            " $ python3 client.py [path/to/key/file] "
-            "[file1 file2 file3 ... fileN]"
+            " $ python3 client.py [path/to/key/file] " "[file1 file2 file3 ... fileN]"
         )
         exit(-1)
 

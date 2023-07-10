@@ -39,19 +39,13 @@ class Client:
     def __init__(self, session=None, settings=None, **kwargs):
         # TODO, make session optional?
         if session is None:
-            args = {
-                k: v
-                for k, v in kwargs.items()
-                if k in {"api_key", "key_location"}
-            }
+            args = {k: v for k, v in kwargs.items() if k in {"api_key", "key_location"}}
             self.session = Session(**args)
         else:
             self.session = session
 
         if settings is None:
-            setting_args = {
-                k: v for k, v in kwargs.items() if k in Settings._settings
-            }
+            setting_args = {k: v for k, v in kwargs.items() if k in Settings._settings}
             self.settings = Settings(**setting_args)
         else:
             self.settings = Settings(settings)
@@ -160,9 +154,7 @@ class Client:
         """
         log_msg = "Submitting file {}"
         log.info(log_msg.format(filename))
-        upl = FileUpload(
-            filename, session=self.session, settings=self.settings
-        )
+        upl = FileUpload(filename, session=self.session, settings=self.settings)
         submission = upl.submit()
         queue.put((filename, submission, None))
 
