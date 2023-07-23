@@ -16,7 +16,7 @@ black==22.10.0
     # via -r requirements.dev.in
 bleach==5.0.1
     # via readme-renderer
-certifi==2022.9.24
+certifi==2022.12.7
     # via
     #   -c requirements.txt
     #   requests
@@ -97,7 +97,7 @@ pycparser==2.21
     # via cffi
 pyflakes==2.5.0
     # via flake8
-pygments==2.13.0
+pygments==2.15.0
     # via
     #   readme-renderer
     #   rich
@@ -116,7 +116,7 @@ pytz==2022.6
     # via babel
 readme-renderer==37.3
     # via twine
-requests==2.28.1
+requests==2.31.0
     # via
     #   -c requirements.txt
     #   requests-toolbelt
