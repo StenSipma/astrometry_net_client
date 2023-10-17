@@ -26,5 +26,5 @@ pyyaml==6.0
     # via astropy
 requests==2.31.0
     # via astrometry-net-client (setup.py)
-urllib3==1.26.12
+urllib3==1.26.18
     # via requests
