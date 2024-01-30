@@ -1,7 +1,7 @@
 import abc
 from typing import Union, cast
 
-from astrometry_net_client.config import upload_url
+from astrometry_net_client.config import upload_url, url_upload_url
 from astrometry_net_client.request import PostRequest
 from astrometry_net_client.session import SessionRequest
 from astrometry_net_client.statusables import Submission
@@ -113,13 +113,49 @@ class URLUpload(BaseUpload):
     """
     Extends from :py:class:`BaseUpload`
 
-    Class for making a url upload to Astrometry.net
-    http://astrometry.net/doc/net/api.html#submitting-a-url
+    Class for making a url upload to Astrometry.net using the
+    Class for uploading a file using an url to the Astrometry.net `upload url`_ endpoint
 
-    Work in progress
+    .. _upload url: http://astrometry.net/doc/net/api.html#submitting-a-url
+
+    Example
+    -------
+    >>> s = Session(api_key='XXXXX')
+    >>> upl = URLUpload('https://some.url', session=s)
+    >>> submission = upl.submit()
+
+    You can then use the resulting submission to inspect the result of your
+    upload.
+
+    Parameters
+    ----------
+    url : str
+        The url of the file which you want to upload.
+    session : :py:class:`astrometry_net_client.session.Session`
+        The login session (required by the
+        :py:class:`astrometry_net_client.request.AuthorizedRequest`
+        class)
+
+    Returns
+    -------
+    :py:class:`astrometry_net_client.statusables.Submission`
+        The submission object, which is created when you upload a file.
     """
 
-    # TODO implement
+    url: str = url_upload_url
+
+    def __init__(self, url_to_upload: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # TODO: check if this is a valid url ?
+        self.url_to_upload = url_to_upload
+
+    def _make_request(self) -> dict:
+        self.data["url"] = self.url_to_upload
+        return super()._make_request()
+
+    def __repr__(self):
+        msg = "URLUpload(url={}, session={})"
+        return msg.format(self.url_to_upload, self.session)
 
 
 class SourcesUpload(BaseUpload):

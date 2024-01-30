@@ -14,6 +14,7 @@ from constants import (
     STATUS_SUCCESS,
     SUCCESS_SUBMISSION_RESULT,
     SUCCESS_SUBMISSION_RESULT_2,
+    URL_TO_UPLOAD,
     VALID_KEY,
     VALID_TOKEN,
     WAITING_SUBMISSION_RESULT,
@@ -94,6 +95,27 @@ class MockUpload:
         )
 
 
+class MockURLUpload:
+    def __call__(self, url, data, **kwargs):
+        payload = json.loads(data["request-json"])
+        if payload["session"] != VALID_TOKEN:
+            # TODO: use correct error message
+            return ResponseObj(
+                {"status": "error", "errormessage": "no session with key"}
+            )
+
+        url_to_upload = payload["url"]
+        assert url_to_upload == URL_TO_UPLOAD
+
+        return ResponseObj(
+            {
+                "status": "success",
+                "subid": 2,
+                # "hash": "6024b45a16bfb5af7a73735cbabdf2b462c11214",
+            }
+        )
+
+
 # Submissions
 @pytest.fixture
 def mock_server(monkeypatch):
@@ -119,6 +141,7 @@ def mock_server(monkeypatch):
     post_mapper = {
         "/api/login": MockSessionChecker(),
         "/api/upload": MockUpload(),
+        "/api/url_upload": MockURLUpload(),
     }
 
     svr = MockServer(get=get_mapper, post=post_mapper)
