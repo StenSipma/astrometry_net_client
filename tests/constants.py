@@ -1,6 +1,8 @@
 VALID_KEY = "valid key"
 VALID_TOKEN = "the session token/key"
 
+URL_TO_UPLOAD = "https://some.image.com"
+
 FILE = "./tests/data/target.200417.00000088.3x3.FR.fits"
 
 STATUS_SUCCESS = {"status": "success"}

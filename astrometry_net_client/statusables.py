@@ -502,7 +502,21 @@ class Job(Statusable):
     @cache_response
     def annotated_display(self):
         """
-        JPEG image as a binary string
+        JPEG image as a binary string.
+
+        Since the result of this call is raw JPEG bytes, you still have to write it to
+        a file in order to view it. See the example below on how to do this.
+
+        Example
+        -------
+        >>> # Given that you uploaded some file and have the Job in the variable 'job'
+        >>> raw_file_bytes = job.annotated_display()
+        >>>
+        >>> # Use any name, as long as it has the JPEG extension
+        >>> filename_to_write = "annotated_display.jpeg"
+        >>> with open(filename_to_write, "wb") as f:
+        >>>     f.write(raw_file_bytes)
+        >>> # Now you can open the file with your preferred image viewer
 
         Returns
         -------
