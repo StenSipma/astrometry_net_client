@@ -41,9 +41,11 @@ package:
 
 # Uploading
 upload-pypi: package
+	pip install --upgrade twine
 	python3 -m twine upload dist/*
 
 upload-test: package
+	pip install --upgrade twine
 	python3 -m twine upload --repository testpypi dist/*
 
 dependencies: deps-package deps-dev
