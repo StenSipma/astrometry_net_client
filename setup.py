@@ -5,7 +5,7 @@ with open("README.rst", "r") as f:
 
 setuptools.setup(
     name="astrometry_net_client",
-    version="0.3.2",
+    version="0.4.0",
     author="Sten Sipma",
     author_email="sten.sipma@ziggo.nl",
     description="A Python interface for the Astrometry.net API.",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/x-rst",
     url="https://github.com/StenSipma/astrometry_net_client",
     packages=["astrometry_net_client"],
-    install_requires=["astropy<=5.2.2", "requests"],
+    install_requires=["astropy<=5.3.4", "requests"],
     keywords="astronomy astrometry client coordinates wcs api",
     classifiers=[
         "Development Status :: 4 - Beta",
