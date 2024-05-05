@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/x-rst",
     url="https://github.com/StenSipma/astrometry_net_client",
     packages=["astrometry_net_client"],
-    install_requires=["astropy==5.3.4", "requests"],
+    install_requires=["astropy<=5.2.2", "requests"],
     keywords="astronomy astrometry client coordinates wcs api",
     classifiers=[
         "Development Status :: 4 - Beta",

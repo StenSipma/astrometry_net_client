@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-astropy==5.3.4
+astropy==5.2.2
     # via astrometry_net_client (setup.py)
 certifi==2024.2.2
     # via requests
