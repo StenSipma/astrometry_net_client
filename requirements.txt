@@ -4,10 +4,8 @@
 #
 #    pip-compile
 #
-astropy==6.1.0
+astropy==5.3.3
     # via astrometry_net_client (setup.py)
-astropy-iers-data==0.2024.4.29.0.28.48
-    # via astropy
 certifi==2024.2.2
     # via requests
 charset-normalizer==3.3.2
