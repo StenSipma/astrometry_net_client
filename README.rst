@@ -30,7 +30,6 @@ The structure of these classes tries to follow the pattern of the API itself, wh
 Using this package, these steps are (note that this is not the ideal way to upload multiple files):
 
 .. code:: python
-   :number-lines:
    
     from astrometry_net_client import Session
     from astrometry_net_client import FileUpload
@@ -48,7 +47,6 @@ Using this package, these steps are (note that this is not the ideal way to uplo
 Or with the higher level ``Client`` :
 
 .. code:: python
-   :number-lines:
    
     from astrometry_net_client import Client
 
