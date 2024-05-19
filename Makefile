@@ -4,11 +4,11 @@ TEST=python3 -m pytest
 
 # Override this variable (or any other) by using the --environment option:
 #  $ PY_VERSION=3.8 make --environment type-check
-PY_VERSION=3.11
+PY_VERSION=3.12
 
 PROJECT_NAME=astrometry_net_client
 
-PROJ_FILES=$(PROJECT_NAME)/*.py
+PROJ_FILES=$(PROJECT_NAME)/*.py $(PROJECT_NAME)/**/*.py 
 TEST_FILES=tests/*.py
 EXAMPLE_FILES=examples/*.py
 CONFIG_FILES=setup.py
@@ -37,7 +37,7 @@ package-install:
 	$(PIP) install dist/$(PROJECT_NAME)-*.tar.gz
 
 package:
-	$(PY) setup.py sdist bdist_wheel
+	$(PY) -m build
 
 # Uploading
 upload-pypi: package
