@@ -64,7 +64,7 @@ class Request(object):
         method: str = "get",
         data: Optional[dict] = None,
         settings: Optional[Settings] = None,
-        **kwargs
+        **kwargs,
     ):
         self.data = {} if data is None else data.copy()
         self.settings = {} if settings is None else settings.copy()

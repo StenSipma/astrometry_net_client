@@ -14,10 +14,29 @@ Astrometry.net Client
    The package is still in development, but it can already be used. 
    Do not hesitate to leave any feedback (positive or negative)!
 
+Quickstart
+----------
+
+Install the package via pip:
+
+.. code:: bash
+
+        pip install astrometry-net-client
+
+Get your API key from: `api_help`_, and paste it in a plaintext file (name it something like `key`).
+
+A script called `anc_upload` should be included with the install.
+
+.. _api_help: https://nova.astrometry.net/api_help
+
+
+
 Introduction
 ------------
 
-This package is meant to be a simple but extensible interface for the `Astrometry.net API`_. A higher level interface is offered through the ``Client`` class, combining most functionality. However, if you want more control over the requests (e.g. by manually checking the responses), you can also use the ``Job``, ``Submission`` and ``UploadFile`` classes directly.
+This package is meant to be a simple but extensible interface for the `Astrometry.net API`_.
+A higher level interface is offered through the ``Client`` class, combining most functionality.
+However, if you want more control over the requests (e.g. by manually checking the responses), you can also use the ``Job``, ``Submission`` and ``UploadFile`` classes directly.
 
 The structure of these classes tries to follow the pattern of the API itself, which is essentially:
 
