@@ -89,7 +89,9 @@ def main():
         # new location. Or just save the wcs separately.
 
         if args.only_wcs:
-            write_filename = output_dir / f"{filename.name.prefix}.wcs.{filename.name.suffix}"
+            write_filename = (
+                output_dir / f"{filename.name.prefix}.wcs.{filename.name.suffix}"
+            )
             hdul = wcs.to_fits()
             try:
                 hdul.writeto(write_filename, overwrite=DO_OVERWRITE)
@@ -151,9 +153,9 @@ def parse_arguments():
         help="If a file with a similar name already exists in the 'output' directory, overwrite it. Default: False",
     )
     parser.add_argument(
-            "--only-wcs",
-            action="store_true",
-            help="Do not update the header of input file, but save the wcs file in the output directory. The filename will be the same, but the suffix '.fits' will be replaced with '.wcs.fits'",
+        "--only-wcs",
+        action="store_true",
+        help="Do not update the header of input file, but save the wcs file in the output directory. The filename will be the same, but the suffix '.fits' will be replaced with '.wcs.fits'",
     )
 
     # One of the methods to specify the key:
