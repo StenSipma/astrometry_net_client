@@ -86,17 +86,26 @@ def main():
         # If the job was successful, we want to get the new wcs file from astrometry.net
         wcs = job.wcs_file()
         # Then we want to add the resulting WCS to the existing file, and write in a
-        # new location
-        with fits.open(filename) as hdul:
-            hdul[0].header.extend(wcs)
+        # new location. Or just save the wcs separately.
 
-            write_filename = output_dir / filename.name
-
-            log.info("Writing to {}...".format(write_filename))
+        if args.only_wcs:
+            write_filename = output_dir / f"{filename.name.prefix}.wcs.{filename.name.suffix}"
+            hdul = wcs.to_fits()
             try:
                 hdul.writeto(write_filename, overwrite=DO_OVERWRITE)
             except OSError:
                 log.error("File {} already exists.".format(write_filename))
+        else:
+            with fits.open(filename) as hdul:
+                hdul[0].header.extend(wcs, update=True)
+
+                write_filename = output_dir / filename.name
+
+                log.info("Writing to {}...".format(write_filename))
+                try:
+                    hdul.writeto(write_filename, overwrite=DO_OVERWRITE)
+                except OSError:
+                    log.error("File {} already exists.".format(write_filename))
 
 
 def parse_arguments():
@@ -140,6 +149,11 @@ def parse_arguments():
         "--overwrite-solve",
         action="store_true",
         help="If a file with a similar name already exists in the 'output' directory, overwrite it. Default: False",
+    )
+    parser.add_argument(
+            "--only-wcs",
+            action="store_true",
+            help="Do not update the header of input file, but save the wcs file in the output directory. The filename will be the same, but the suffix '.fits' will be replaced with '.wcs.fits'",
     )
 
     # One of the methods to specify the key:
