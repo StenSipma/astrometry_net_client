@@ -89,9 +89,7 @@ def main():
         # new location. Or just save the wcs separately.
 
         if args.only_wcs:
-            write_filename = (
-                output_dir / f"{filename.stem}.wcs.{filename.suffix}"
-            )
+            write_filename = output_dir / f"{filename.stem}.wcs.{filename.suffix}"
             hdul = wcs.to_fits()
             try:
                 hdul.writeto(write_filename, overwrite=DO_OVERWRITE)
