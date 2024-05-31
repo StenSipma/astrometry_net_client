@@ -90,7 +90,7 @@ def main():
 
         if args.only_wcs:
             write_filename = (
-                output_dir / f"{filename.name.stem}.wcs.{filename.name.suffix}"
+                output_dir / f"{filename.stem}.wcs.{filename.suffix}"
             )
             hdul = wcs.to_fits()
             try:
