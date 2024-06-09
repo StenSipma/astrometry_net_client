@@ -6,7 +6,7 @@ from typing import Generator
 
 from astrometry_net_client.session import Session
 from astrometry_net_client.settings import Settings
-from astrometry_net_client.statusables import Job
+from astrometry_net_client.statusables import Job, Submission
 from astrometry_net_client.uploads import FileUpload
 
 log = logging.getLogger(__name__)
@@ -102,7 +102,9 @@ class Client:
                 "queue_size must be greater than 0 and less or equal to ",
                 f"{MAX_WORKERS}, was: {queue_size}",
             )
-        processing_queue = Queue(maxsize=queue_size)
+        processing_queue: Queue[tuple[Path, Submission, Job]] = Queue(
+            maxsize=queue_size
+        )
 
         # Populate queue initially
         for _, filename in zip(range(queue_size), files_iter):
