@@ -1,9 +1,12 @@
 import logging
 import time
+from pathlib import Path
 from queue import Queue
+from typing import Generator
 
 from astrometry_net_client.session import Session
 from astrometry_net_client.settings import Settings
+from astrometry_net_client.statusables import Job, Submission
 from astrometry_net_client.uploads import FileUpload
 
 log = logging.getLogger(__name__)
@@ -57,7 +60,7 @@ class Client:
         self,
         files_iter,
         queue_size=MAX_WORKERS,
-    ):
+    ) -> Generator[tuple[Job, Path], None, None]:
         """
         Generator which uploads a number of files concurrently, yielding the
         :py:class:`astrometry_net_client.statusables.Job` & filename when done.
@@ -99,7 +102,9 @@ class Client:
                 "queue_size must be greater than 0 and less or equal to ",
                 f"{MAX_WORKERS}, was: {queue_size}",
             )
-        processing_queue = Queue(maxsize=queue_size)
+        processing_queue: Queue[tuple[Path, Submission, Job]] = Queue(
+            maxsize=queue_size
+        )
 
         # Populate queue initially
         for _, filename in zip(range(queue_size), files_iter):
@@ -116,26 +121,36 @@ class Client:
             # back in the queue.
 
             if job is None:
-                submission.status()
+                try:
+                    submission.status()
+                except Exception:
+                    log.exception("Exception during submission status")
+                    processing_queue.put((filename, submission, job))
+
                 if submission.done():
                     job = submission.jobs[0]
                 else:
                     processing_queue.put((filename, submission, job))
                     continue
 
-            job.status()
-            if job.done():
-                try:
-                    filename = next(files_iter)
-                except StopIteration:
-                    pass
-                else:
-                    self._insert_submission(filename, processing_queue)
-                log_msg = "FINISHED submission {}, yielding..."
-                log.info(log_msg.format(filename))
-                yield (job, filename)
-            else:
+            try:
+                job.status()
+            except Exception:
+                log.exception("Exception during job status")
                 processing_queue.put((filename, submission, job))
+            else:
+                if job.done():
+                    try:
+                        filename = next(files_iter)
+                    except StopIteration:
+                        pass
+                    else:
+                        self._insert_submission(filename, processing_queue)
+                    log_msg = "FINISHED submission {}, yielding..."
+                    log.info(log_msg.format(filename))
+                    yield (job, filename)
+                else:
+                    processing_queue.put((filename, submission, job))
 
             time.sleep(SLEEP_TIME)
 
@@ -155,8 +170,14 @@ class Client:
         log_msg = "Submitting file {}"
         log.info(log_msg.format(filename))
         upl = FileUpload(filename, session=self.session, settings=self.settings)
-        submission = upl.submit()
-        queue.put((filename, submission, None))
+        try:
+            submission = upl.submit()
+        except Exception:
+            log.exception(
+                f"Exception while submitting file {filename}. Skipping submit..."
+            )
+        else:
+            queue.put((filename, submission, None))
 
     def upload_file(self, filename, settings=None):
         """

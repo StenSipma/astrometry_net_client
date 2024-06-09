@@ -5,11 +5,12 @@ import textwrap
 from pathlib import Path
 
 from astropy.io import fits
+from astropy.wcs import WCS
 
 from astrometry_net_client import Client, Settings
 
 # These lines set up logging
-FMT = "[%(asctime)s] %(levelname)-8s |" " %(funcName)s - %(message)s"
+FMT = "[%(asctime)s] %(levelname)-8s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=FMT)
 log = logging.getLogger(__name__)
 
@@ -49,6 +50,9 @@ def main():
     if args.fov_width_range:
         s.set_scale_estimate(args.fov_width, args.fov_width_err, unit="arcminwidth")
 
+    if args.tweak_order:
+        s.tweak_order = args.tweak_order
+
     log.info("Initializing client (logging in)")
     c = Client(api_key=args.key, key_location=args.key_location, settings=s)
     log.info("Log in done")
@@ -84,19 +88,28 @@ def main():
             continue
 
         # If the job was successful, we want to get the new wcs file from astrometry.net
-        wcs = job.wcs_file()
+        wcs = WCS(job.wcs_file())
+
         # Then we want to add the resulting WCS to the existing file, and write in a
-        # new location
-        with fits.open(filename) as hdul:
-            hdul[0].header.extend(wcs)
-
-            write_filename = output_dir / filename.name
-
-            log.info("Writing to {}...".format(write_filename))
+        # new location. Or just save the wcs separately.
+        if args.only_wcs:
+            write_filename = output_dir / f"{filename.stem}.wcs{filename.suffix}"
+            hdul = wcs.to_fits()
             try:
                 hdul.writeto(write_filename, overwrite=DO_OVERWRITE)
             except OSError:
                 log.error("File {} already exists.".format(write_filename))
+        else:
+            with fits.open(filename) as hdul:
+                hdul[0].header.extend(wcs.to_header(), update=True)
+
+                write_filename = output_dir / filename.name
+
+                log.info("Writing to {}...".format(write_filename))
+                try:
+                    hdul.writeto(write_filename, overwrite=DO_OVERWRITE)
+                except OSError:
+                    log.error("File {} already exists.".format(write_filename))
 
 
 def parse_arguments():
@@ -115,9 +128,9 @@ def parse_arguments():
                 Examples
                 --------
                 A very basic example is:
-                    $ anc_upload.py --key-location ./key file1.fits file2.fits ./dir_with_files/*
+                    $ anc_upload.py --key-location ./key.txt file1.fits file2.fits ./dir_with_files/*
 
-                This assumes you have the api key in the current directory in a file named 'key'.
+                This assumes you have the api key in the current directory in a file named 'key.txt'.
                 It will upload 'file1.fits', 'file2.fits' and all fits files in the 'dir_with_files' directory.
 
                 Another example, setting the plate scale to be between 0.56 and 1.75 arcsec/pixel:
@@ -141,6 +154,11 @@ def parse_arguments():
         action="store_true",
         help="If a file with a similar name already exists in the 'output' directory, overwrite it. Default: False",
     )
+    parser.add_argument(
+        "--only-wcs",
+        action="store_true",
+        help="Do not update the header of input file, but save the wcs file in the output directory. The filename will be the same, but the suffix '.fits' will be replaced with '.wcs.fits'",
+    )
 
     # One of the methods to specify the key:
     key_group = parser.add_mutually_exclusive_group(required=True)
@@ -157,24 +175,24 @@ def parse_arguments():
     )
 
     # Settings
-    scale_group = parser.add_argument_group(
+    settings_group = parser.add_argument_group(
         title="Settings",
         description="Some options for basic settings / hints to give to Astrometry.net",
     )
-    scale_group.add_argument(
+    settings_group.add_argument(
         "--plate-scale",
         metavar="FLOAT",
         type=float,
         help="Unit: arcsec / pixel. Give an estimate for the plate scale of your instrument. Astrometry.net will look around: plate-scale within plate-scale-err of that value",
     )
-    scale_group.add_argument(
+    settings_group.add_argument(
         "--plate-scale-err",
         metavar="FLOAT",
         type=float,
         default=10,
         help="Specify the range (percent) around the 'plate-scale' value for Astrometry.net to search for. Default=10 percent",
     )
-    scale_group.add_argument(
+    settings_group.add_argument(
         "--plate-scale-range",
         metavar="FLOAT",
         nargs=2,
@@ -182,25 +200,31 @@ def parse_arguments():
         help="Unit: arcsec / pixel. Same as 'plate-scale' but instead gives the range explicitiy (LOWER, UPPER)",
     )
 
-    scale_group.add_argument(
+    settings_group.add_argument(
         "--fov-width",
         metavar="FLOAT",
         type=float,
         help="Unit: arcmin. Give an estimate for the FoV width of the instrument. Astrometry.net will look around: fov-width within fov-width-err of that value.",
     )
-    scale_group.add_argument(
+    settings_group.add_argument(
         "--fov-width-err",
         metavar="FLOAT",
         type=float,
         default=10,
         help="Specify the range (percent) around the 'fov-width' value for Astrometry.net to search for. Default=10 percent",
     )
-    scale_group.add_argument(
+    settings_group.add_argument(
         "--fov-width-range",
         metavar="FLOAT",
         nargs=2,
         type=float,
         help="Unit: arcmin. Same as 'fov-width' but instead gives the range explicitiy (LOWER, UPPER)",
+    )
+    settings_group.add_argument(
+        "--tweak-order",
+        metavar="INT",
+        type=int,
+        help="Polynomial degree (order) for distortion correction. Default is 2. Higher orders may produce totally bogus results (high-order polynomials are strange beasts).",
     )
 
     return parser.parse_args()

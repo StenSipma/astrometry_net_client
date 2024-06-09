@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name="astrometry_net_client"
-version="0.5.0"
+version="0.5.1"
 description="A Python interface for the Astrometry.net API."
 readme="README.rst"
 dependencies=["astropy<=5.3.4", "requests"]
