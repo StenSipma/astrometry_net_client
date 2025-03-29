@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-          python-version: ["3.9", "3.10", "3.11", "3.12"]
+          python-version: ["3.11", "3.12", "3.13"]
     steps:
       # All steps for setting up
       - uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
           # Default architecture: x64
 
       - name: Setup caching for pip
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}

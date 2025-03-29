@@ -25,10 +25,30 @@ Install the package via pip:
 
 Get your API key from: `api_help`_, and paste it in a plaintext file (name it something like `key`).
 
-A script called `anc_upload` should be included with the install.
+A script called `anc_upload` should be included with the install, which can be used to
+upload a file via the API. For example, to upload a file named `observation.fits` use:
+
+.. code:: bash
+
+   anc_upload --key-location ./api-key observation.fits
+
+where the api key is given in the file `api-key`. The solved file will be
+placed in a subdirectory called `anc_output`. Multiple files can be given at the same
+time as well.
+
+To make the solving faster, it is recommended to give known parameters of your
+image. For instance, if you know the plate scale of your image is 1.7 arcsec / pixel, you
+can specify it via the command line:
+
+.. code:: bash
+
+   anc_upload --key-location ./api-key observation.fits --plate-scale 1.7
+
+By default, a tolerance is set of 10% around this value. Alternatively, the field of view
+of the image can also be given via the `--fov-width` argument. Use `anc_upload --help` to
+see all the available options.
 
 .. _api_help: https://nova.astrometry.net/api_help
-
 
 
 Introduction
