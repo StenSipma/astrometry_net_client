@@ -24,7 +24,7 @@ pyerfa==2.0.1.5
     # via astropy
 pyyaml==6.0.2
     # via astropy
-requests==2.32.3
+requests==2.32.4
     # via astrometry_net_client (setup.py)
 urllib3==2.3.0
     # via requests
