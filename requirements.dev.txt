@@ -10,23 +10,25 @@ astropy-sphinx-theme==2.0
     # via -r requirements.dev.in
 babel==2.17.0
     # via sphinx
+backports-tarfile==1.2.0
+    # via jaraco-context
 black==25.1.0
     # via -r requirements.dev.in
 certifi==2025.1.31
     # via
-    #   -c /home/sten/Documents/Projects/astrometry_net_client/requirements.txt
+    #   -c requirements.txt
     #   requests
-cffi==1.17.1
+cffi==2.0.0
     # via cryptography
 charset-normalizer==3.4.1
     # via
-    #   -c /home/sten/Documents/Projects/astrometry_net_client/requirements.txt
+    #   -c requirements.txt
     #   requests
 click==8.1.8
     # via black
 coverage[toml]==7.7.1
     # via pytest-cov
-cryptography==44.0.2
+cryptography==46.0.5
     # via secretstorage
 darglint==1.8.1
     # via -r requirements.dev.in
@@ -40,10 +42,12 @@ id==1.5.0
     # via twine
 idna==3.10
     # via
-    #   -c /home/sten/Documents/Projects/astrometry_net_client/requirements.txt
+    #   -c requirements.txt
     #   requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==8.7.1
+    # via keyring
 iniconfig==2.1.0
     # via pytest
 isort==6.0.1
@@ -84,7 +88,7 @@ nh3==0.2.21
     # via readme-renderer
 packaging==24.2
     # via
-    #   -c /home/sten/Documents/Projects/astrometry_net_client/requirements.txt
+    #   -c requirements.txt
     #   black
     #   pytest
     #   sphinx
@@ -116,7 +120,7 @@ readme-renderer==44.0
     # via twine
 requests==2.32.3
     # via
-    #   -c /home/sten/Documents/Projects/astrometry_net_client/requirements.txt
+    #   -c requirements.txt
     #   id
     #   requests-toolbelt
     #   sphinx
@@ -155,10 +159,12 @@ typing-extensions==4.13.0
     # via mypy
 urllib3==2.3.0
     # via
-    #   -c /home/sten/Documents/Projects/astrometry_net_client/requirements.txt
+    #   -c requirements.txt
     #   requests
     #   twine
     #   types-requests
+zipp==3.23.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
