@@ -139,3 +139,8 @@ key
 
 # Ignore general backup files
 *.bak
+
+# Personal Claude Code config
+CLAUDE.local.md
+.claude/
+uv.lock
