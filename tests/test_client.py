@@ -1,5 +1,6 @@
 import os
 from unittest import mock
+from unittest.mock import MagicMock
 
 import pytest
 from constants import FILE, VALID_KEY
@@ -64,3 +65,42 @@ def test_client_upload_multiple(mock_server):
         assert filename == FILE
         assert job.done()
         assert job.success()
+
+
+@pytest.mark.mocked
+def test_upload_files_gen_correct_filenames(mock_server, monkeypatch):
+    """Each yielded filename must match the file whose job finished, not the next queued file."""
+    client = Client(api_key=VALID_KEY)
+
+    def fake_insert(filename, queue):
+        job = MagicMock()
+        job.done.return_value = True
+        submission = MagicMock()
+        submission.done.return_value = True
+        submission.jobs = [job]
+        queue.put((filename, submission, job))
+
+    monkeypatch.setattr(client, "_insert_submission", fake_insert)
+
+    files = ["file_a.fits", "file_b.fits"]
+    results = list(client.upload_files_gen(files, queue_size=1))
+
+    yielded_filenames = {filename for _, filename in results}
+    assert yielded_filenames == set(files)
+
+
+@pytest.mark.mocked
+def test_upload_file_doesnt_mutate_client_settings(mock_server, monkeypatch):
+    """Per-upload settings must not leak into the client's default settings."""
+    client = Client(api_key=VALID_KEY)
+    assert "parity" not in client.settings
+
+    fake_submission = MagicMock()
+    fake_submission.jobs = [MagicMock()]
+    monkeypatch.setattr(
+        "astrometry_net_client.client.FileUpload.submit", lambda self: fake_submission
+    )
+
+    client.upload_file(FILE, settings=Settings(parity=2))
+
+    assert "parity" not in client.settings

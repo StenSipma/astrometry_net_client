@@ -126,11 +126,11 @@ class Client:
             job.status()
             if job.done():
                 try:
-                    filename = next(files_iter)
+                    next_filename = next(files_iter)
                 except StopIteration:
                     pass
                 else:
-                    self._insert_submission(filename, processing_queue)
+                    self._insert_submission(next_filename, processing_queue)
                 log_msg = "FINISHED submission {}, yielding..."
                 log.info(log_msg.format(filename))
                 yield (job, filename)
@@ -179,7 +179,7 @@ class Client:
             :py:meth:`astrometry_net_client.statusables.Statusable.success` if
             it did.
         """
-        upl_settings = self.settings
+        upl_settings = self.settings.copy()
         if settings is not None:
             upl_settings.update(settings)
 
